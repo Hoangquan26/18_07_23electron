@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+    <link rel="stylesheet" href="assets/css/index.css">
+    <link rel="stylesheet" href="./assets/boxicons-2.1.4/css/boxicons.min.css">
+    <title>Tool</title>
+  </head>
+  <body>
+    <div class="body">
+      <!-- end body config -->
+      <div class="body_config">
+        <div class="body_config_header">      
+          <h3>Cài đặt</h3>
+          <span class="body_config--action open">
+            <i class='bx bx-cog' ></i>
+          </span>
+        </div>
+        <div class="body_config_main">
+          <div class="user_input absolute_input margin_top">
+            <input minlength="1" required name="web_path" type="text"/>
+            <label for="web_path">Tên miền: </label>
+          </div>
+          <div class="user_input margin_top">
+            <label for="proxy">Proxy<i class="bx-arrow-to-bottom"></i></label>
+            <div class="proxy-session">
+              <div>
+                <input name="proxy_type" checked value="auto_proxy" type="radio"/>
+                <label for="proxy_type">Tự động get proxy</label>
+              </div>
+              <div class="absolute_input">
+                <input minlength="1" required type="text" value="http://192.168.1.7:22022/#/device-list/index" name="proxy_path">
+                <label for="proxy_value">Tên miền lấy proxy</label>
+              </div>
+              </div>
+              <div class="margin_top">
+                <div>
+                  <input name="proxy_type" value="auto_proxy" type="radio"/>
+                  <label for="proxy_type">Proxy thủ công</label>
+                </div>
+                <div class="absolute_input">
+                  <input disabled minlength="1" required type="text" name="proxy_path">
+                  <label for="proxy_value">Địa chỉ proxy</label>
+                </div>
+              </div>
+            </div>
+            <div class="margin_top">
+              <label for="web_path">Thời gian delay:  </label>
+              <input value="1" min="1" name="delay_start" class=" w-2" type="number"/>
+              <span>s - </span>
+              <input value="3" min="3" name="delay_end" class=" w-2" type="number">
+              <span>s</span>
+            </div>
+            <div class="margin_top">
+              <label for="web_path">Luồng chạy đồng thời: </label>
+              <input value="1" name="web_path" min="1" type="number"/>
+              <span>luồng</span>
+            </div>
+            <div class="body_config--save">
+              <button class="body_config--save-btn">Lưu</button>
+            </div>
+          </div>
+          <div>
+        </div>
+      </div>
+
+      <!-- end body config -->
+      <!-- start main body config -->
+      <div class="main_body">
+        
+        <!-- main session -->
+        <div>
+          <div class="main_body--action">
+            <div>
+              <div>
+                <label>Chọn file chứa tài khoản</label>
+                <input type="file" name="account_selection">
+              </div>
+            </div>
+            <div>
+              <button class="run_program">Bắt đầu</button>
+              <button class="stop_program">Dừng</button>
+            </div>
+          </div>
+
+          <!-- account table -->
+          <div class="main_body_table_wrapper">
+            <div class="table_wrapper_header">
+              <h3>Danh sách tài khoản</h3> 
+            </div>
+            <table class="account_table">
+              <!-- table header -->
+              <tr>
+                <th>Tài khoản</th>
+                <th>Mật khẩu</th>
+                <th>Số dư</th>
+                <th>Trạng thái</th>
+              </tr>
+              <!-- end table header -->
+              <!-- table content -->
+              <tr>
+                <td>username</td>
+                <td>pasword</td>
+                <td>0. VNĐ</td>
+                <td>Không hoạt động</td>
+              </tr>
+              <tr>
+                <td>username</td>
+                <td>pasword</td>
+                <td>0. VNĐ</td>
+                <td>Không hoạt động</td>
+              </tr>
+              <tr>
+                <td>username</td>
+                <td>pasword</td>
+                <td>0. VNĐ</td>
+                <td>Không hoạt động</td>
+              </tr>
+              <tr>
+                <td>username</td>
+                <td>pasword</td>
+                <td>0. VNĐ</td>
+                <td>Không hoạt động</td>
+              </tr>
+              <tr>
+                <td>username</td>
+                <td>pasword</td>
+                <td>0. VNĐ</td>
+                <td>Không hoạt động</td>
+              </tr>
+              <tr>
+                <td>username</td>
+                <td>pasword</td>
+                <td>0. VNĐ</td>
+                <td>Không hoạt động</td>
+              </tr>
+              <tr>
+                <td>username</td>
+                <td>pasword</td>
+                <td>0. VNĐ</td>
+                <td>Không hoạt động</td>
+              </tr>
+              <tr>
+                <td>username</td>
+                <td>pasword</td>
+                <td>0. VNĐ</td>
+                <td>Không hoạt động</td>
+              </tr>
+              <tr>
+                <td>username</td>
+                <td>pasword</td>
+                <td>0. VNĐ</td>
+                <td>Không hoạt động</td>
+              </tr>
+              <tr>
+                <td>username</td>
+                <td>pasword</td>
+                <td>0. VNĐ</td>
+                <td>Không hoạt động</td>
+              </tr>
+              <!-- end table content -->
+            </table>
+          </div>
+          <!-- end account table -->
+
+        </div>
+        <!-- end main session -->
+
+        <!-- blur session -->
+      </div>
+      <!-- end main body config -->
+    </div>
+  <div class="blur none"></div>
+  </body>
+  <script src="./rendered/index.rendered.js"></script>
+</html>
