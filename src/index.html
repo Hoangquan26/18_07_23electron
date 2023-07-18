@@ -13,18 +13,18 @@
       <!-- end body config -->
       <div class="body_config">
         <div class="body_config_header">      
-          <h3>Cài đặt</h3>
+          <h3>Tên miền <i class='bx bxs-down-arrow' ></i></h3>
           <span class="body_config--action open">
             <i class='bx bx-cog' ></i>
           </span>
         </div>
         <div class="body_config_main">
-          <div class="user_input absolute_input margin_top">
-            <input minlength="1" required name="web_path" type="text"/>
+          <div class="user_input absolute_input">
+            <input value="https://via2fa.com/profile" minlength="1" required name="web_path" type="text"/>
             <label for="web_path">Tên miền: </label>
           </div>
           <div class="user_input margin_top">
-            <label for="proxy">Proxy<i class="bx-arrow-to-bottom"></i></label>
+            <label class=" margin_top" for="proxy"><h3>Proxy <i class='bx bxs-down-arrow' ></i></h3></label>
             <div class="proxy-session">
               <div>
                 <input name="proxy_type" checked value="auto_proxy" type="radio"/>
@@ -47,6 +47,9 @@
               </div>
             </div>
             <div class="margin_top">
+              <h3 class="margin_top">Cài đặt khác <i class='bx bxs-down-arrow' ></i></h3>
+            </div>
+            <div class="margin_top">
               <label for="web_path">Thời gian delay:  </label>
               <input value="1" min="1" name="delay_start" class=" w-2" type="number"/>
               <span>s - </span>
@@ -59,7 +62,8 @@
               <span>luồng</span>
             </div>
             <div class="body_config--save">
-              <button class="body_config--save-btn">Lưu</button>
+              <p class="body_config_advance_btn">Cài đặt nâng cao</p>
+              <button class="body_config--save_btn">Lưu</button>
             </div>
           </div>
           <div>
@@ -72,11 +76,13 @@
         
         <!-- main session -->
         <div>
-          <div class="main_body--action">
+          <header>
+            <h3>Trang chính</h3>
+          </header>
+          <div class="main_body--action margin_top">
             <div>
               <div>
-                <label>Chọn file chứa tài khoản</label>
-                <input type="file" name="account_selection">
+                <button name="account_selection">Thêm tài khoản</button>
               </div>
             </div>
             <div>
@@ -90,78 +96,24 @@
             <div class="table_wrapper_header">
               <h3>Danh sách tài khoản</h3> 
             </div>
-            <table class="account_table">
-              <!-- table header -->
-              <tr>
-                <th>Tài khoản</th>
-                <th>Mật khẩu</th>
-                <th>Số dư</th>
-                <th>Trạng thái</th>
-              </tr>
-              <!-- end table header -->
-              <!-- table content -->
-              <tr>
-                <td>username</td>
-                <td>pasword</td>
-                <td>0. VNĐ</td>
-                <td>Không hoạt động</td>
-              </tr>
-              <tr>
-                <td>username</td>
-                <td>pasword</td>
-                <td>0. VNĐ</td>
-                <td>Không hoạt động</td>
-              </tr>
-              <tr>
-                <td>username</td>
-                <td>pasword</td>
-                <td>0. VNĐ</td>
-                <td>Không hoạt động</td>
-              </tr>
-              <tr>
-                <td>username</td>
-                <td>pasword</td>
-                <td>0. VNĐ</td>
-                <td>Không hoạt động</td>
-              </tr>
-              <tr>
-                <td>username</td>
-                <td>pasword</td>
-                <td>0. VNĐ</td>
-                <td>Không hoạt động</td>
-              </tr>
-              <tr>
-                <td>username</td>
-                <td>pasword</td>
-                <td>0. VNĐ</td>
-                <td>Không hoạt động</td>
-              </tr>
-              <tr>
-                <td>username</td>
-                <td>pasword</td>
-                <td>0. VNĐ</td>
-                <td>Không hoạt động</td>
-              </tr>
-              <tr>
-                <td>username</td>
-                <td>pasword</td>
-                <td>0. VNĐ</td>
-                <td>Không hoạt động</td>
-              </tr>
-              <tr>
-                <td>username</td>
-                <td>pasword</td>
-                <td>0. VNĐ</td>
-                <td>Không hoạt động</td>
-              </tr>
-              <tr>
-                <td>username</td>
-                <td>pasword</td>
-                <td>0. VNĐ</td>
-                <td>Không hoạt động</td>
-              </tr>
-              <!-- end table content -->
-            </table>
+            <div class="account_table_wrapper">
+              <table class="account_table">
+                <tr class="disabled_row">
+                  <th>Tài khoản</th>
+                  <th>Mật khẩu</th>
+                  <th>Số dư</th>
+                  <th>Trạng thái</th>
+                </tr>
+                <tr class="disabled_row"> 
+                  <td colspan="4" aria-colspan="4">
+                    <div class="none_account_image_wrapper">
+                      <img class="none_account_image" src="./assets/images/NoneAccountExceptionjfif.jfif"/>
+                      <h3>Chưa có tài khoản</h3>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </div>
           </div>
           <!-- end account table -->
 
@@ -174,5 +126,5 @@
     </div>
   <div class="blur none"></div>
   </body>
-  <script src="./rendered/index.rendered.js"></script>
+  <script src="./rendered/rendered.index.js"></script>
 </html>

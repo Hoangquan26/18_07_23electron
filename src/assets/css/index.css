@@ -16,7 +16,7 @@ button {
     padding: 5px 10px;
     border: 1px solid #333;
     background-color: #ccc;
-    border-radius: 5px;
+    border-radius: 2px;
     cursor: pointer;
     transition: all ease-in-out .1s;
 }
@@ -167,8 +167,22 @@ input[type='radio'] {
 }
 
 .body_config--save {
+    width: 100%;
     margin-top: 50px;
     align-self: center;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.body_config_advance_btn {
+    color :rgb(83, 95, 230);
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.body_config_advance_btn:hover {
+    opacity: .7;
 }
 
 /* end body config */
@@ -213,19 +227,64 @@ input[type='radio'] {
     margin-top: 20px;
 }
 
+.account_table_wrapper {
+    width: 100%;
+    height: calc(calc(25px * 16) + 2px);
+    overflow-y: scroll;
+}
+
 .main_body_table_wrapper .account_table {
     width: 100%;
     border: 1px solid #ccc;
-    margin-top: 10px;
-    height: calc(25px * 15);
+}
+
+.table_wrapper_header {
+    height: 25px;
+    padding-bottom: 10px;
 }
 
 .main_body_table_wrapper .account_table tr{
-    max-height: 25px;
+    height: 25px;
+    cursor: pointer;
+    transition: all ease .2s;
+    -webkit-user-select: none;
+    user-select: none;
 }
+
 
 .main_body_table_wrapper .account_table tr td{
     text-align: center;
+}
+
+.account_table tr:hover {
+    background-color: rgb(10, 221, 158);
+}
+.account_table tr.row_selected {
+    background-color: rgb(10, 221, 158);
+}
+
+.none_account_image {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+    object-position: center;
+}
+
+.none_account_image_wrapper {
+    background-color: transparent !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px ;
+}
+
+.none_account_image_wrapper h3 {
+    margin-top: 10px;
+}
+
+.disabled_row {
+    background-color: transparent !important;
 }
 
 /* end table css */
