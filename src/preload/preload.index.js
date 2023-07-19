@@ -17,5 +17,6 @@ contextBridge.exposeInMainWorld('seleniumActions', {
         totalThread: number,
     }
     */
-    startAction: (data = [], options= {}) => ipcRenderer.invoke('selenium:startAction', data, options)
+    startAction: (data = [], options= {}) => ipcRenderer.invoke('selenium:startAction', data, options),
+    replyAccountData: (callback) => ipcRenderer.on('selenium:replyAccountData', callback)
 })

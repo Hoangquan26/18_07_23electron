@@ -2,10 +2,32 @@
 const { app, BrowserWindow, globalShortcut, ipcMain, dialog } = require('electron')
 const path = require('path')
 const fs = require('fs')
+const { Worker, workerData } = require('node:worker_threads')
 //import define lib
 
 const SeleniumAction = require('./controller/controller.selenium')
+const { rejects } = require('assert')
 //create Browser
+let SELENIUM_QUEUE = 0
+let SELENIUM_ARRAY = []
+
+
+const seleniumPromiseContructor = (account) => {
+    // const AccountMoney = await SeleniumAction.checkViaSo({username, password});
+    return new Promise((resolve, reject) => {        
+        const worker = new Worker('./src/worker/worker.check_via_so.js', {
+            workerData: account
+        })
+        worker.on('message', data => {
+            resolve(data)
+        })
+        worker.on('error', (err) => {
+            reject(err)
+        })
+    })
+    // resolve(AccountMoney)
+}
+
 const createBrowserWindow = () => {
 
     //handle function
@@ -34,11 +56,34 @@ const createBrowserWindow = () => {
     const handleSeleniumStartAction = async(event, data, options={
         changePassword: null,
         totalThread: 1,
-    }) => {
-        data?.forEach(account => {
-            const {username, password, changepass, newpass, proxy} = account
-            SeleniumAction.checkAccount({username, password});
+    }, path = 'https://viaso1.com/', total_thread = 4) => {
+        data?.forEach(async(account) => {
+            SELENIUM_ARRAY.push((account))
+            // if(SELENIUM_QUEUE < total_thread) {
+            //     SELENIUM_QUEUE++
+            //     console.log(await SeleniumAction.checkViaSo(account))
+            //     SELENIUM_QUEUE--
+            // }
+            // else {
+
+            // }
         })
+        while(SELENIUM_ARRAY.length > 0) {
+            if(SELENIUM_QUEUE < total_thread ){
+                SELENIUM_QUEUE++
+                const account = SELENIUM_ARRAY.shift()
+                SeleniumAction.checkViaSo(account, event.sender)
+                .then((data) => {
+                    console.log(data)
+                    SELENIUM_QUEUE--
+                })
+                // SELENIUM_QUEUE++
+                // seleniumPromiseContructor(SELENIUM_ARRAY.shift())
+                // const data = await seleniumPromiseContructor(SELENIUM_ARRAY.shift())
+                // SELENIUM_QUEUE--
+            }
+        }
+        console.log(SELENIUM_ARRAY)
     }
     
 

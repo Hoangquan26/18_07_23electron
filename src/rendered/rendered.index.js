@@ -53,11 +53,15 @@ account_table_rows.forEach(element => {
     selectedFunctionConstructor(element)
 })
 
+const getAllSelectedAccount = () => {
+    return document.querySelectorAll('.row_selected')
+}
+
+
 
 //insert account to table 
 
 const handleErrorWhileResponse = (account_table, err) => {
-    console.log(err)
     account_table.innerHTML =  `<tr class='disabled_row'>
                                     <th>Tài khoản</th>
                                     <th>Mật khẩu</th>
@@ -81,6 +85,15 @@ fileSelector.addEventListener('click', async () => {
     const data = await window.fileActions.insertAccount()
 })
 
+window.seleniumActions.replyAccountData((_event, value) => {
+    const {id, status, money} = value
+    const row = document.getElementById(id)
+    console.log(row)
+    const chilren = row.childNodes
+    chilren[2].textContent = money
+    chilren[3].textContent = status
+})
+
 window.fileActions.replyInsertAccount((_event, value) => {
     const account_table = document.querySelector('.account_table')
         if(value.status == 200) {
@@ -92,6 +105,7 @@ window.fileActions.replyInsertAccount((_event, value) => {
                                                 <th>Trạng thái</th>
                                             </tr>`
                 res = value.res.trim().replace('\r', '').split('\n')
+                let i = 0;
                 res.forEach(account =>{
                     const tr = document.createElement('tr')
                     const splitAccountData = account.split('|')
@@ -101,6 +115,7 @@ window.fileActions.replyInsertAccount((_event, value) => {
                         tr.appendChild(td)
                     })
                     selectedFunctionConstructor(tr)
+                    tr.id = i++
                     account_table.appendChild(tr)
                 })
             }
@@ -115,7 +130,36 @@ window.fileActions.replyInsertAccount((_event, value) => {
     })
 
     //program action
+    
     const run_program = document.querySelector('.run_program')
     run_program.addEventListener('click', () => {
-        window.seleniumActions.startAction([{username: 'hquan2712', password: '1'}])
+        const rowData = getAllSelectedAccount()
+        const sendData = []
+        rowData.forEach((data) => {
+            child = data.childNodes
+            const id = data.id
+            const username = child[0].textContent
+            const password = child[1].textContent
+            sendData.push({id, username, password})
+            if(child[3].textContent === 'Không hoạt động') {
+                try {
+                    child[3].textContent === 'Đang hoạt động'
+                    // window.seleniumActions.startAction([{id: data.getAttribute('id').toString() ,username: child[0].textContent, password: child[1].textContent}])
+                    child[3].style.color == 'green'
+                    child[3].textContent === 'Thành công'
+                }
+                catch {
+                    child[3].style.color == 'red'
+                    child[3].textContent === 'Lỗi'
+                }
+                finally{
+                    setTimeout(() => {
+                        child[3].style.color == 'black'
+                        child[3].textContent === 'Không hoạt động'
+                    }, 3000)
+                }
+            }
+        })
+        window.seleniumActions.startAction(sendData)
+        // window.seleniumActions.startAction([{username: 'quannnn', password: '642003'}])
     })
