@@ -32,12 +32,39 @@ const seleniumPromiseContructor = (account) => {
 
 const workerPromise = (array, event, options) => {
     return new Promise((resolve, reject) => {
-        const res = SeleniumAction.checkViaSo(array.shift(), sender = event.sender, options)
+        const params = {account: array.shift(), sender: event.sender, options}
+        const res = SeleniumAction.checkViaSo(params)
         resolve(res)
     })
 }
 
 const refreshAutoProxy = (proxies) => proxies[Math.floor(Math.random() * proxies.length)]
+
+const backtrackWorking = ({total_thread, event, options}) => {
+    if(SELENIUM_ARRAY.length == 0)
+        return
+    if(SELENIUM_QUEUE > total_thread)
+        return
+    if(SELENIUM_QUEUE < total_thread) {
+        SELENIUM_QUEUE++
+        options.normalProxy = options.autoProxy ? refreshAutoProxy(options.autoProxy) : options.normalProxy 
+        // if(options.autoProxy){
+        //     options.normalProxy = refreshAutoProxy(options.autoProxy)
+        // }
+        // else {
+
+        // }
+        workerPromise(SELENIUM_ARRAY, event, options)
+        .then(data => {
+            SELENIUM_QUEUE--
+            return backtrackWorking({total_thread, event, options})
+        })
+        if(SELENIUM_QUEUE < total_thread)
+            return backtrackWorking({total_thread, event, options})
+        else 
+            return
+    }
+}
 
 
 const createBrowserWindow = () => {
@@ -75,93 +102,68 @@ const createBrowserWindow = () => {
         startDelay: 1,
         endDelay: 3 
     }) => {
-        console.log(options)
-        // switch(options.path) {
-        //     case 'https://viaso1.com/' :
-        //         break;
-        //     default:
-        //         break;
-        // }
         data?.forEach(async(account) => {
             SELENIUM_ARRAY.push((account))
             ResponseController.replyAccountData({id: account.id, status: 'Trong hàng chờ'}, event.sender)
         })
-
-        if(options.autoProxy) {
-            new Promise((resolve, rejects) => {
-                const worker =  new Worker('./src/worker/worker.proxy.js', {
-                    workerData: options.autoProxy
-                })
-                worker.on('message', (value) => {
-                    const proxies = value
-                    // startWorking({options, account : data, event, proxies})
-                    // while(SELENIUM_ARRAY.length > 0) {
-                        // if(SELENIUM_QUEUE < options.totalThread){
-                        //     SELENIUM_QUEUE++
-                        //     const seleworker =  new Worker('./src/worker/worker.check_via_so.js', {
-                        //         workerData :{
-                        //             account: SELENIUM_ARRAY.shift(),
-                        //             proxies,
-                        //             event: JSON.stringify(event.sender), 
-                        //             options
-                        //         }
-                        //     })
-                        //     seleworker.on('message', (value) => {
-                        //         console.log(value)
-                        //         SELENIUM_QUEUE--
-                        //     })
-                        // }
-                        while(SELENIUM_ARRAY.length > 0) {
-                            if(SELENIUM_QUEUE < options.totalThread){
-                                const proxy = refreshAutoProxy(proxies)
-                                options['normalProxy'] = proxy
-                                SELENIUM_QUEUE++
-                                // new Promise((resolve, reject) => {
-                                //     const res = SeleniumAction.checkViaSo(SELENIUM_ARRAY.shift(), sender = event.sender, options)
-                                //     resolve(res)
-                                // })
-                                workerPromise(SELENIUM_ARRAY, event, options)
-                                .then((data) => {
-                                    console.log(data)
-                                    SELENIUM_QUEUE--
-                                    const proxy = refreshAutoProxy(proxies)
-                                    options['normalProxy'] = proxy
-                                    workerPromise(DOLATER_QUEUE, event, options)
-                                })
-                            }
-                            else {
-                                DOLATER_QUEUE.push(SELENIUM_ARRAY.shift())
-                            }
-                        }
-                        worker.terminate()
-                    // }
-                })
-            })
-        }
-        else {
-            console.log('inhere')
-            while(SELENIUM_ARRAY.length > 0) {
-                if(SELENIUM_QUEUE < options.totalThread){
-                    const proxy = options.normalProxy
-                    options['normalProxy'] = proxy
-                    SELENIUM_QUEUE++
-                    // new Promise((resolve, reject) => {
-                    //     const res = SeleniumAction.checkViaSo(SELENIUM_ARRAY.shift(), sender = event.sender, options)
-                    //     resolve(res)
-                    // })
-                    workerPromise(SELENIUM_ARRAY, event, options)
-                    .then((data) => {
-                        console.log(data)
-                        SELENIUM_QUEUE--
-                        const proxy = options.normalProxy
-                        options['normalProxy'] = proxy
-                        workerPromise(DOLATER_QUEUE, event, options)
+        switch(options.path) {
+            case 'https://viaso1.com/':
+                if(options.autoProxy?.length > 0) {
+                    new Promise((resolve, rejects) => {
+                        const worker =  new Worker('./src/worker/worker.proxy.js', {
+                            workerData: options.autoProxy
+                        })
+                        worker.on('message', (value) => {
+                            const proxies = value
+                                // while(SELENIUM_ARRAY.length > 0) {
+                                //     if(SELENIUM_QUEUE < options.totalThread){
+                                //         const proxy = refreshAutoProxy(proxies)
+                                //         options['normalProxy'] = proxy
+                                //         SELENIUM_QUEUE++
+                                //         workerPromise(SELENIUM_ARRAY, event, options)
+                                //         .then((data) => {
+                                //             console.log(data)
+                                //             SELENIUM_QUEUE--
+                                //             const proxy = refreshAutoProxy(proxies)
+                                //             options['normalProxy'] = proxy
+                                //             if(DOLATER_QUEUE.length){
+                                //                 workerPromise(DOLATER_QUEUE, event, options)
+                                //             }
+                                //         })
+                                //     }
+                                //     else {
+                                //         DOLATER_QUEUE.push(SELENIUM_ARRAY.shift())
+                                //     }
+                                // }
+                                options.autoProxy = proxies
+                                backtrackWorking({total_thread: options.totalThread, event, options})
+                                worker.terminate()
+                        })
                     })
                 }
                 else {
-                    DOLATER_QUEUE.push(SELENIUM_ARRAY.shift())
+                    // while(SELENIUM_ARRAY.length > 0) {
+                    //     if(SELENIUM_QUEUE < options.totalThread){
+                    //         const proxy = options.normalProxy
+                    //         options['normalProxy'] = proxy
+                    //         SELENIUM_QUEUE++
+                    //         workerPromise(SELENIUM_ARRAY, event, options)
+                    //         .then((data) => {
+                    //             SELENIUM_QUEUE--
+                    //             const proxy = options.normalProxy
+                    //             options['normalProxy'] = proxy
+                    //             workerPromise(DOLATER_QUEUE, event, options)
+                    //         })
+                    //     }
+                    //     else {
+                    //         DOLATER_QUEUE.push(SELENIUM_ARRAY.shift())
+                    //     }
+                    // }
+                    backtrackWorking({total_thread: options.totalThread, event, options})
                 }
-            }
+                break;
+            default:
+                break;
         }
     }
 

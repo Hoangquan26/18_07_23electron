@@ -1,7 +1,7 @@
 const body_config_close_btn = document.querySelector(".body_config--action")
+const blur = document.querySelector('.blur')
+const body_config = document.querySelector('.body_config')
 body_config_close_btn.addEventListener('click', () => {
-    const body_config = document.querySelector('.body_config')
-    const blur = document.querySelector('.blur')
     if(body_config_close_btn.classList.contains('close')) {
         body_config_close_btn.classList.remove('close')
         body_config_close_btn.classList.add('open')
@@ -17,6 +17,14 @@ body_config_close_btn.addEventListener('click', () => {
         body_config_close_btn.innerHTML = `<i class='bx bx-x'></i>`
     }
 })
+blur.addEventListener('click', (e) => {
+    body_config_close_btn.classList.remove('close')
+    body_config_close_btn.classList.add('open')
+    body_config.classList.remove('open')
+    blur.classList.add('none')
+    body_config_close_btn.innerHTML = `<i class='bx bx-cog' ></i>`
+})
+
 // end handle toogle body_config
 
 // handle ui proxy session
@@ -109,13 +117,16 @@ fileSelector.addEventListener('click', async () => {
 })
 
 window.seleniumActions.replyAccountData((_event, value) => {
-    const {id, status, money, proxy} = value
+    console.log(value)
+    const {id, status, money, proxy, newPass} = value
     const row = document.getElementById(id)
     const chilren = row.childNodes
     console.log(value, chilren)
     chilren[2].textContent = money
     chilren[3].textContent = status
     chilren[4].textContent = proxy
+    if(newPass)
+        chilren[1].textContent = newPass
 })
 
 window.fileActions.replyInsertAccount((_event, value) => {
