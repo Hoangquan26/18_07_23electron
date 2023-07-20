@@ -1,57 +1,3 @@
-* {
-    font-family: Arial, Helvetica, sans-serif;
-    margin: 0;
-    font-size: 14px;
-}
-
-body {
-    border-top: 1px solid #ccc;
-}
-
-input {
-    padding: 5px;
-}
-
-button {
-    padding: 5px 10px;
-    border: 1px solid #333;
-    background-color: #ccc;
-    border-radius: 2px;
-    cursor: pointer;
-    transition: all ease-in-out .1s;
-}
-
-button:hover {
-    background-color: rgb(225, 225, 225);
-}
-
-button:active {
-    transform: scale(0.92);
-}
-
-
-.user_input {
-    display: flex;
-    gap: 5px;
-    flex-direction: column;
-}
-
-.absolute_input input:disabled, .absolute_input input:disabled + label {
-    background-color: #ccc;
-}
-
-
-input[type='text'] {
-    width: 90%;
-}
-input[type='number'] {
-    width: 30px;
-}
-
-input[type='radio'] {
-    margin-bottom: 10px;
-}
-
 .body {
     position: relative;
 }
@@ -129,35 +75,6 @@ input[type='radio'] {
     width: 100%;
 }
 
-.body h3 {
-    font-size: 20px;
-    font-weight: 500;
-}
-
-.absolute_input label {
-    top: 50%;
-    transform: translateY(-50%);
-    left: 5px;
-    position: absolute;
-    pointer-events: none;
-    transition: all ease .3s;
-    background-color: white;
-}
-
-.absolute_input input {
-    transition: all ease .3s;
-}
-
-.absolute_input {
-    position: relative;
-    margin-top: 5px;
-}
-
-.absolute_input input:focus+label, .absolute_input>input:valid+label {
-    top: 0;
-    font-size: 12px;
-}
-
 .body_config>h3 {
     margin-bottom: 10px;
 }
@@ -198,6 +115,58 @@ input[type='radio'] {
     overflow: hidden;
 }
 
+.program_action_wrapper_wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.program_action_wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2px;
+}
+
+.program_action_wrapper_wrapper input {
+    padding-right: 10px;
+}
+
+.program_action_wrapper_wrapper .margin_top {
+    margin-top: 10px;
+}
+
+.program_action {
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    gap: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.run_program:hover {
+    background-color: rgb(57, 200, 57);
+    color: white;
+}
+
+.stop_program:hover {
+    background-color: rgb(215, 65, 51);
+    color: white;
+}
+
+.program_action {
+    background-color: white;
+}
+.run_program {
+    border-color: rgb(57, 200, 57);
+    color: rgb(57, 200, 57);
+}
+
+.stop_program {
+    border-color: rgb(215, 65, 51);
+    color: rgb(215, 65, 51);
+}
+
 .blur {
     position:  absolute;
     top: 0;
@@ -224,12 +193,12 @@ input[type='radio'] {
 
 .main_body_table_wrapper {
     width: 100%;
-    margin-top: 20px;
+    margin-top: 10px;
 }
 
 .account_table_wrapper {
     width: 100%;
-    height: calc(calc(25px * 16) + 2px);
+    height: calc(calc(25px * 15));
     overflow-y: scroll;
 }
 
@@ -247,8 +216,6 @@ input[type='radio'] {
     height: 25px;
     cursor: pointer;
     transition: all ease .2s;
-    -webkit-user-select: none;
-    user-select: none;
 }
 
 

@@ -58,6 +58,29 @@ const getAllSelectedAccount = () => {
 }
 
 
+//handle input ui
+
+const delay_start_input = document.getElementsByName('delay_start')[0]
+const delay_end_input = document.getElementsByName('delay_end')[0]
+delay_start_input.addEventListener('change', (e) => {
+    console.log(delay_end_input.value)
+    if(delay_start_input.value == delay_end_input.value)
+        delay_start_input.value = delay_end_input.value
+})
+
+delay_end_input.addEventListener('change', (e) => {
+    if(delay_start_input.value == delay_end_input.value)
+        delay_end_input.value = delay_start_input.value 
+})
+
+const new_pass_input = document.getElementsByName('new_pass')[0]
+new_pass_input.addEventListener('change', (e) => {
+    if(e.target.value.length < 6 && e.target.value.length > 0)
+        new_pass_input.classList.add('invalid')
+    else 
+        new_pass_input.classList.remove('invalid')
+})
+
 
 //insert account to table 
 
@@ -86,12 +109,13 @@ fileSelector.addEventListener('click', async () => {
 })
 
 window.seleniumActions.replyAccountData((_event, value) => {
-    const {id, status, money} = value
+    const {id, status, money, proxy} = value
     const row = document.getElementById(id)
-    console.log(row)
     const chilren = row.childNodes
+    console.log(value, chilren)
     chilren[2].textContent = money
     chilren[3].textContent = status
+    chilren[4].textContent = proxy
 })
 
 window.fileActions.replyInsertAccount((_event, value) => {
@@ -103,6 +127,7 @@ window.fileActions.replyInsertAccount((_event, value) => {
                                                 <th>Mật khẩu</th>
                                                 <th>Số dư</th>
                                                 <th>Trạng thái</th>
+                                                <th>Proxy</th>
                                             </tr>`
                 res = value.res.trim().replace('\r', '').split('\n')
                 let i = 0;
@@ -114,6 +139,9 @@ window.fileActions.replyInsertAccount((_event, value) => {
                         td.textContent = item
                         tr.appendChild(td)
                     })
+                    const proxyCol = document.createElement('td')
+                    proxyCol.textContent = 'Không dùng'
+                    tr.append(proxyCol)
                     selectedFunctionConstructor(tr)
                     tr.id = i++
                     account_table.appendChild(tr)
@@ -129,37 +157,63 @@ window.fileActions.replyInsertAccount((_event, value) => {
         }
     })
 
-    //program action
-    
-    const run_program = document.querySelector('.run_program')
-    run_program.addEventListener('click', () => {
-        const rowData = getAllSelectedAccount()
-        const sendData = []
-        rowData.forEach((data) => {
-            child = data.childNodes
-            const id = data.id
-            const username = child[0].textContent
-            const password = child[1].textContent
-            sendData.push({id, username, password})
-            if(child[3].textContent === 'Không hoạt động') {
-                try {
-                    child[3].textContent === 'Đang hoạt động'
-                    // window.seleniumActions.startAction([{id: data.getAttribute('id').toString() ,username: child[0].textContent, password: child[1].textContent}])
-                    child[3].style.color == 'green'
-                    child[3].textContent === 'Thành công'
-                }
-                catch {
-                    child[3].style.color == 'red'
-                    child[3].textContent === 'Lỗi'
-                }
-                finally{
-                    setTimeout(() => {
-                        child[3].style.color == 'black'
-                        child[3].textContent === 'Không hoạt động'
-                    }, 3000)
-                }
+//program action
+const run_program = document.querySelector('.run_program')
+
+
+const getProgramSetting = () => {
+    const options = {}
+    options['path'] = document.getElementsByName('web_path')[0].value
+    const proxy_chance = document.getElementsByName('proxy_type')
+    if(proxy_chance[0].checked){
+        options['autoProxy'] = document.getElementsByName('proxy_path')[0].value
+    }
+    else {
+        options['normalProxy'] = document.getElementsByName('proxy_path')[1].value
+    }
+    options['startDelay'] = parseInt(document.getElementsByName('delay_start')[0].value)
+    options['endDelay'] = parseInt(document.getElementsByName('delay_end')[0].value)
+    options['totalThread'] = parseInt(document.getElementsByName('total_thread')[0].value)
+    const new_pass = document.getElementsByName('new_pass')[0].value
+    if(new_pass)
+        options['changePassword'] = true
+        options['newPass'] = new_pass
+    return options
+}
+
+run_program.addEventListener('click', () => {
+    //get option
+    const options = getProgramSetting()
+    //get accounts
+    const rowData = getAllSelectedAccount()
+    const sendData = []
+    rowData.forEach((data) => {
+        child = data.childNodes
+        const id = data.id
+        const username = child[0].textContent
+        const password = child[1].textContent
+        sendData.push({id, username, password})
+        if(child[3].textContent === 'Không hoạt động') {
+            try {
+                child[3].textContent === 'Đang hoạt động'
+                // window.seleniumActions.startAction([{id: data.getAttribute('id').toString() ,username: child[0].textContent, password: child[1].textContent}])
+                child[3].style.color == 'green'
+                child[3].textContent === 'Thành công'
             }
-        })
-        window.seleniumActions.startAction(sendData)
-        // window.seleniumActions.startAction([{username: 'quannnn', password: '642003'}])
+            catch {
+                child[3].style.color == 'red'
+                child[3].textContent === 'Lỗi'
+            }
+            finally{
+                setTimeout(() => {
+                    child[3].style.color == 'black'
+                    child[3].textContent === 'Không hoạt động'
+                }, 3000)
+            }
+        }
     })
+    //start task
+    window.seleniumActions.startAction(sendData, options)
+    // window.seleniumActions.startAction([{username: 'quannnn', password: '642003'}])
+})
+

@@ -4,7 +4,8 @@ const { By, Key, Browser, Builder, until } = require('selenium-webdriver')
 const { workerData } = require('worker_threads')
 const ResponseController = require('./controller.response')
 const FileController = require('./controller.file')
-
+const chrome = require('selenium-webdriver/chrome')
+const proxy = require('selenium-webdriver/proxy')
 const VIASO_ACCOUNT_PATH = path.join(__dirname, '../../acconts/account.viaso1.txt')
 
 class SeleniumAction {
@@ -28,10 +29,26 @@ class SeleniumAction {
         // closeMessengerPoup.click()
     }    
 
-    static checkViaSo = async ({id, username, password, newpass = "", changepass = false, proxy = ""}, sender) => {
-        ResponseController.replyAccountData({id, money: 'Đang kiểm tra', status: 'Đang đăng nhập'}, sender)
+    static checkViaSo = async (
+    account,
+    sender, 
+    options = {
+        newPass,        
+        changePassword,
+        normalProxy: 'Không dùng',
+        startDelay: 1,
+        endDelay: 3 
+    }) => {
+        const normalProxy = options.normalProxy
+        let chromeOptions = new chrome.Options()
+        chromeOptions.setPageLoadStrategy('eager')
+        chromeOptions.setProxy(proxy.manual({https: normalProxy}))
+        const {id, username, password} = account
+        ResponseController.replyAccountData({id, money: 'Đang kiểm tra', status: 'Đang đăng nhập', proxy: normalProxy}, sender)
         let res = {}
-        let driver = await new Builder().forBrowser('chrome' || Browser.CHROME).build()
+        let driver = await new Builder().forBrowser('chrome' || Browser.CHROME).setChromeOptions(chromeOptions).build()
+        // driver.get('https://check-host.net')
+        // await setTimeout(2000)
         driver.get('https://viaso1.com/')
         try {
             await driver.wait(until.titleContains('Cung Cấp Via Cổ, Via XMDT')).then(async() => {
@@ -41,9 +58,9 @@ class SeleniumAction {
                 await setTimeout(1000)
                 driver.findElement(By.css('.btn.btn-hero-primary')).click()
                 await setTimeout(1000)
-                ResponseController.replyAccountData({id, money: 'Đang kiểm tra', status: 'Đã đăng nhập'}, sender)
+                ResponseController.replyAccountData({id, money: 'Đang kiểm tra', status: 'Đã đăng nhập', proxy: normalProxy}, sender)
                 if((await driver.getCurrentUrl()).toString() == 'https://viaso1.com/login') {
-                    ResponseController.replyAccountData({id, money: 'Chưa kiểm tra', status: 'Sai mật khẩu'}, sender)
+                    ResponseController.replyAccountData({id, money: 'Chưa kiểm tra', status: 'Sai mật khẩu', proxy: normalProxy}, sender)
                     FileController.ReplaceAccountData({filename: VIASO_ACCOUNT_PATH.toString() , username, money: 'Chưa kiểm tra', status: 'Sai mật khẩu'})
                     throw Error('Sai mật khẩu'.toString('utf-8'))
                 }
@@ -52,7 +69,7 @@ class SeleniumAction {
                     await setTimeout(1000)
                     const accountMoney = await driver.executeScript("return document.querySelector('div.row.justify-content-center > div > div > div.block-content > div:nth-child(2) > div > div:nth-child(4) > div > span > strong').textContent")
                     if(accountMoney) {
-                        ResponseController.replyAccountData({id, money: accountMoney + 'VNĐ', status: 'Kiểm tra thành công'}, sender)
+                        ResponseController.replyAccountData({id, money: accountMoney + 'VNĐ', status: 'Kiểm tra thành công', proxy: normalProxy}, sender)
                         res = {
                             code: 200,
                             data : accountMoney

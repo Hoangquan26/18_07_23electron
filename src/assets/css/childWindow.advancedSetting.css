@@ -1,0 +1,24 @@
+.body {
+    padding: 10px;
+}
+
+.setting_form {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.login_central {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+i {
+    font-size: 12px;
+}
+
+.header {
+    margin-bottom: 10px;
+}

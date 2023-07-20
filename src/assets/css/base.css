@@ -1,0 +1,97 @@
+* {
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0;    
+    -webkit-user-select: none;
+    user-select: none;
+    font-size: 14px;
+}
+
+body {
+    border-top: 1px solid #ccc;
+}
+
+input {
+    padding: 5px;
+    border-radius: 5px;
+    border-width: 1px;
+    border-color: #000;
+    border-style: solid;
+}
+
+button {
+    padding: 5px 10px;
+    border: 1px solid #333;
+    background-color: #ccc;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all ease-in-out .1s;
+}
+
+button:hover {
+    background-color: rgb(225, 225, 225);
+}
+
+button:active {
+    transform: scale(0.92);
+}
+
+
+input.invalid {
+    border-color: rgb(251, 78, 78);
+    color: rgb(251, 78, 78);
+}
+input.invalid+label {
+    color: rgb(251, 78, 78);
+}
+
+input[type='text'] {
+    width: 90%;
+}
+input[type='number'] {
+    width: 30px;
+}
+
+input[type='radio'] {
+    margin-bottom: 10px;
+}
+
+.user_input {
+    display: flex;
+    gap: 5px;
+    flex-direction: column;
+}
+
+.absolute_input input:disabled, .absolute_input input:disabled + label {
+    background-color: #ccc;
+}
+
+
+
+.body h3 {
+    font-size: 20px;
+    font-weight: 500;
+}
+
+.absolute_input label {
+    top: 50%;
+    transform: translateY(-50%);
+    left: 5px;
+    position: absolute;
+    pointer-events: none;
+    transition: all ease .3s;
+    background-color: white;
+}
+
+.absolute_input input {
+    transition: all ease .3s;
+}
+
+.absolute_input {
+    position: relative;
+    margin-top: 5px;
+}
+
+.absolute_input input:focus+label, .absolute_input>input:valid+label {
+    top: 0;
+    font-size: 12px;
+}
