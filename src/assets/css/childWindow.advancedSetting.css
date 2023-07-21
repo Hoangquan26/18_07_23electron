@@ -1,5 +1,5 @@
 .body {
-    padding: 10px;
+    padding: 15px;
 }
 
 .setting_form {
@@ -19,6 +19,78 @@ i {
     font-size: 12px;
 }
 
-.header {
-    margin-bottom: 10px;
+
+.default_setting {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #ccc;
+}
+
+.add_config{
+    color:#2196F3;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+/* select option */
+
+
+
+/* Reset default styles for select element */
+select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border: none;
+    background-color: transparent;
+    padding: 8px 20px;
+    font-size: 16px;
+    color: #333;
+    border: 2px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    outline: none;
+}
+
+/* Style for the custom select container */
+.custom-select {
+    position: relative;
+    display: inline-block;
+    overflow: hidden;
+    border-radius: 5px;
+    background-color: #f1f1f1;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Style for the custom select arrow */
+.custom-select::after {
+    content: '\25BC'; /* Down arrow symbol */
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    font-size: 14px;
+}
+
+/* Style for the custom select when clicked */
+.custom-select select:focus {
+    border-color: #2196F3;
+}
+
+/* Style for the custom options container */
+.custom-select select::-ms-expand {
+    display: none; /* Hide default arrow on IE/Edge */
+}
+
+/* Style for the options */
+option {
+    padding: 8px;
+}
+
+/* Style for the selected option */
+option:checked {
+    background-color: #2196F3;
+    color: white;
 }

@@ -1,3 +1,4 @@
+const { screen, app } = require('electron')
 const { setTimeout }  = require('timers/promises')
 const path = require('path')
 const { By, Key, Browser, Builder, until } = require('selenium-webdriver')
@@ -9,6 +10,18 @@ const proxy = require('selenium-webdriver/proxy')
 const { urlIs } = require('selenium-webdriver/lib/until')
 const VIASO_ACCOUNT_PATH = path.join(__dirname, '../../acconts/account.viaso1.txt')
 
+
+let screenDimensions = null
+let screenSize = null
+let windowHeigth = null
+let windowWidth = null
+app.on('ready', () => {
+    screenDimensions =  screen.getPrimaryDisplay()
+    screenSize = screenDimensions.size
+    console.log(screenSize)
+    windowHeigth = screenSize.height / 2.0
+    windowWidth = screenSize.width / 4.0
+})
 class SeleniumAction {
     static checkAccount = async ({username, password, newpass = false, changepass ="", proxy = ""}) => {
         let driver = await new Builder().forBrowser(Browser.CHROME).build()
@@ -38,9 +51,11 @@ class SeleniumAction {
         changePassword,
         normalProxy: 'Không dùng',
         startDelay: 1,
-        endDelay: 3 
-    }}) => {
-        console.log('=------------------',account, (parseInt(Math.floor(Math.random() * options.endDelay) + options.startDelay)))
+        endDelay: 3,
+        headless: false
+    },
+    position
+    }) => {
         let changePassStatus = false
         const normalProxy = options.normalProxy
         let chromeOptions = new chrome.Options()
@@ -48,13 +63,22 @@ class SeleniumAction {
         if(options.normalProxy.length > 0) {
             chromeOptions.setProxy(proxy.manual({https: normalProxy}))
         }
+        if(options.headless) {
+            chromeOptions.addArguments('--headless')
+        }
+        if(options.userAgent.length > 0) {
+            chromeOptions.addArguments(`--user-agent=${options.userAgent}`)
+        }
         const {id, username, password} = account
         ResponseController.replyAccountData({id, money: 'Đang kiểm tra', status: 'Đang đăng nhập', proxy: normalProxy || 'Không dùng'}, sender)
         let res = {}
         let driver = await new Builder().forBrowser('chrome' || Browser.CHROME).setChromeOptions(chromeOptions).build()
         // driver.get('https://check-host.net')
         // await setTimeout(2000)
+        driver.manage().window().setRect({width: windowWidth, height: windowHeigth, x: (position % 4) * windowWidth, y : ((position) % (4 /2)) * windowHeigth })
         driver.get('https://viaso1.com/')
+        // await driver.manage().window().setSize(700, 400)
+        // await driver.manage().window().setPosition((position % 4) * windowWidth , ((position) % (4 /2)) * windowHeigth )
         try {
             await driver.wait(until.titleContains('Cung Cấp Via Cổ, Via XMDT')).then(async() => {
                 driver.findElement(By.id('login-username')).sendKeys(username)

@@ -19,10 +19,20 @@
             <i class='bx bx-cog' ></i>
           </span>
         </div>
+        <div class="facebook_icon margin_top">
+          <span class="body_config--action open">
+            <i class='bx bxl-facebook-circle'></i>
+          </span>
+        </div>
+        <div class="home_icon margin_top">
+          <span class="body_config--action open margin_top">
+            <i class='bx bx-home'></i>
+          </span>
+        </div>
         <div class="body_config_main">
           <div class="user_input absolute_input">
             <input value="https://viaso1.com/" minlength="1" required name="web_path" type="text"/>
-            <label for="web_path">Tên miền: </label>
+            <label for="web_path">Tên miền</label>
           </div>
           <div class="user_input margin_top">
             <label class=" margin_top" for="proxy"><h3>Proxy <i class='bx bxs-down-arrow' ></i></h3></label>
@@ -50,6 +60,12 @@
             <div class="margin_top">
               <h3 class="margin_top">Cài đặt khác <i class='bx bxs-down-arrow' ></i></h3>
             </div>
+            <div class="user_input margin_top">
+              <div class="absolute_input">
+                <input minlength="1" required name="user_agent" type="text"/>
+                <label for="user_agent">User-agent</label>
+              </div>
+            </div>
             <div class="margin_top">
               <label for="web_path">Thời gian delay:  </label>
               <input value="1" min="1" name="delay_start" class=" w-2" type="number"/>
@@ -62,9 +78,18 @@
               <input value="1" name="total_thread" min="1" type="number"/>
               <span>luồng</span>
             </div>
+            <div class="margin_top">
+              <div class="headless_setting">
+                <p>Ẩn trình duyệt</p>
+                <label class="toggle-button">
+                  <input type="checkbox" id="toggle">
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
             <div class="body_config--save">
               <a href="./childWindow/advancedSetting/index.html" target="_blank" class="body_config_advance_btn">Cài đặt nâng cao</a>
-              <button class="body_config--save_btn">Lưu</button>
+              <!-- <button class="body_config--save_btn">Lưu</button> -->
             </div>
           </div>
           <div>
@@ -73,7 +98,7 @@
 
       <!-- end body config -->
       <!-- start main body config -->
-      <div class="main_body">
+      <div class="main_body onScreen">
         
         <!-- main session -->
         <div>
@@ -113,7 +138,7 @@
                   <th>Proxy</th>
                 </tr>
                 <tr class="disabled_row"> 
-                  <td colspan="4" aria-colspan="4">
+                  <td colspan="5" aria-colspan="4">
                     <div class="none_account_image_wrapper">
                       <img class="none_account_image" src="./assets/images/NoneAccountExceptionjfif.jfif"/>
                       <h3>Chưa có tài khoản</h3>
@@ -129,6 +154,61 @@
         <!-- end main session -->
 
         <!-- blur session -->
+      </div>
+
+      <div class="facebook_body">
+        <div>
+          <header>
+            <h3>Facebook</h3>
+          </header>
+          <div class="main_body--action margin_top">
+            <div>
+              <div>
+                <button name="facebook_account_selection">Thêm tài khoản</button>
+              </div>
+            </div>
+            <div class="program_action_wrapper_wrapper">
+              <div class="program_action_wrapper">
+                <button class="program_action facebook_run_program">Bắt đầu <i class='bx bx-play' ></i></button>
+                <button class="program_action facebook_stop_program">Dừng <i class='bx bx-stop'></i></button>
+              </div>
+              <div class="absolute_input margin_top">
+                <input required minlength="1" type="text" name="facebook_new_pass">
+                <label for="facebook_new_pass">Mật khẩu mới</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- account table -->
+          <div class="main_body_table_wrapper">
+            <div class="table_wrapper_header">
+              <h3>Danh sách tài khoản</h3> 
+            </div>
+            <div class="facebook_account_table_wrapper">
+              <table class="facebook_account_table">
+                <tr class="disabled_row">
+                  <th>Tài khoản</th>
+                  <th>Mật khẩu</th>
+                  <th>2fa</th>
+                  <th>mail</th>
+                  <th>passmail</th>
+                  <th>cookie</th>
+                  <th>Trạng thái</th>
+                  <th>Proxy</th>
+                </tr>
+                <tr class="disabled_row"> 
+                  <td colspan="9" aria-colspan="4">
+                    <div class="none_account_image_wrapper">
+                      <img class="none_account_image" src="./assets/images/NoneAccountExceptionjfif.jfif"/>
+                      <h3>Chưa có tài khoản</h3>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </div>
+          <!-- end account table -->
+        </div>
       </div>
       <!-- end main body config -->
     </div>

@@ -68,6 +68,21 @@ const getAllSelectedAccount = () => {
 
 //handle input ui
 
+// Optional JavaScript code (if needed)
+// You can use this script to handle events or perform actions when the toggle button is clicked.
+const toggleButton = document.getElementById("toggle");
+
+toggleButton.addEventListener("change", function() {
+  if (this.checked) {
+    // Do something when the button is toggled on
+    console.log("Button is ON");
+  } else {
+    // Do something when the button is toggled off
+    console.log("Button is OFF");
+  }
+});
+
+
 const delay_start_input = document.getElementsByName('delay_start')[0]
 const delay_end_input = document.getElementsByName('delay_end')[0]
 delay_start_input.addEventListener('change', (e) => {
@@ -92,8 +107,10 @@ new_pass_input.addEventListener('change', (e) => {
 
 //insert account to table 
 
-const handleErrorWhileResponse = (account_table, err) => {
-    account_table.innerHTML =  `<tr class='disabled_row'>
+const handleErrorWhileResponse = (account_table, err, type) => {
+    switch(type){
+        case 'main_table':
+            account_table.innerHTML =  `<tr class='disabled_row'>
                                     <th>Tài khoản</th>
                                     <th>Mật khẩu</th>
                                     <th>Số dư</th>
@@ -106,18 +123,38 @@ const handleErrorWhileResponse = (account_table, err) => {
                                             <h3>Chưa có tài khoản</h3>
                                         </div>
                                     </td>
-                                </tr>
-                                        `
+                                </tr>`
+            break;
+        case 'facebook_table' :
+        document.querySelector('.facebook_account_table').innerHTML = `<tr class="disabled_row">
+                                                <th>Tài khoản</th>
+                                                <th>Mật khẩu</th>
+                                                <th>2fa</th>
+                                                <th>mail</th>
+                                                <th>passmail</th>
+                                                <th>cookie</th>
+                                                <th>Trạng thái</th>
+                                                <th>Proxy</th>
+                                            </tr>
+                                            <tr class="disabled_row"> 
+                                                <td colspan="9" aria-colspan="4">
+                                                <div class="none_account_image_wrapper">
+                                                    <img class="none_account_image" src="./assets/images/NoneAccountExceptionjfif.jfif"/>
+                                                    <h3>Chưa có tài khoản</h3>
+                                                </div>
+                                                </td>
+                                            </tr>`
+                break;
+    }                                   
 }
 
 const fileSelector = document.getElementsByName('account_selection')[0]
 
 fileSelector.addEventListener('click', async () => {
-    const data = await window.fileActions.insertAccount()
+    const data = await window.fileActions.insertAccount('main_table')
 })
 
 window.seleniumActions.replyAccountData((_event, value) => {
-    console.log(value)
     const {id, status, money, proxy, newPass} = value
     const row = document.getElementById(id)
     const chilren = row.childNodes
@@ -131,36 +168,90 @@ window.seleniumActions.replyAccountData((_event, value) => {
 
 window.fileActions.replyInsertAccount((_event, value) => {
     const account_table = document.querySelector('.account_table')
+    const facebook_account_table = document.querySelector('.facebook_account_table')
+    console.log(facebook_account_table)
         if(value.status == 200) {
-            try {
-                account_table.innerHTML =  `<tr class='disabled_row'>
-                                                <th>Tài khoản</th>
-                                                <th>Mật khẩu</th>
-                                                <th>Số dư</th>
-                                                <th>Trạng thái</th>
-                                                <th>Proxy</th>
-                                            </tr>`
-                res = value.res.trim().replace('\r', '').split('\n')
-                let i = 0;
-                res.forEach(account =>{
-                    const tr = document.createElement('tr')
-                    const splitAccountData = account.split('|')
-                    splitAccountData.forEach(item => {
-                        const td = document.createElement('td')
-                        td.textContent = item
-                        tr.appendChild(td)
-                    })
-                    const proxyCol = document.createElement('td')
-                    proxyCol.textContent = 'Không dùng'
-                    tr.append(proxyCol)
-                    selectedFunctionConstructor(tr)
-                    tr.id = i++
-                    account_table.appendChild(tr)
-                })
-            }
-            //refreah table
-            catch (err){
-                handleErrorWhileResponse(account_table, err)
+            switch(value.type) {
+                case 'main_table':
+                    try {
+                        account_table.innerHTML =  `<tr class='disabled_row'>
+                                                        <th>Tài khoản</th>
+                                                        <th>Mật khẩu</th>
+                                                        <th>Số dư</th>
+                                                        <th>Trạng thái</th>
+                                                        <th>Proxy</th>
+                                                    </tr>`
+                        res = value.res.trim().replace('\r', '').split('\n')
+                        let i = 0;
+                        res.forEach(account =>{
+                            const tr = document.createElement('tr')
+                            const splitAccountData = account.split('|')
+                            splitAccountData.forEach(item => {
+                                const td = document.createElement('td')
+                                td.textContent = item
+                                tr.appendChild(td)
+                            })
+                            const proxyCol = document.createElement('td')
+                            proxyCol.textContent = 'Không dùng'
+                            tr.append(proxyCol)
+                            selectedFunctionConstructor(tr)
+                            tr.id = i++
+                            account_table.appendChild(tr)
+                        })
+                    }
+                    //refreah table
+                    catch (err){
+                        handleErrorWhileResponse(account_table, err)
+                    }
+                    break;
+                case 'facebook_table':
+                    try {
+                        facebook_account_table.innerHTML =  `<tr class='disabled_row'>
+                                                        <th>Tài khoản</th>
+                                                        <th>Mật khẩu</th>
+                                                        <th>2fa</th>
+                                                        <th>mail</th>
+                                                        <th>passmail</th>
+                                                        <th>cookie</th>
+                                                        <th>Trạng thái</th>
+                                                        <th>Proxy</th>
+                                                    </tr>`
+                        res = value.res.trim().replace('\r', '').split('\n')
+                        let i = 0;
+                        res.forEach(account =>{
+                            const tr = document.createElement('tr')
+                            const splitAccountData = account.split('|')
+                            const usernametd = document.createElement('td')
+                            usernametd.textContent = splitAccountData[0]
+                            const passwordtd = document.createElement('td')
+                            passwordtd.textContent = splitAccountData[1]
+                            const _2fatd = document.createElement('td')
+                            _2fatd.textContent = splitAccountData[2]
+                            const mailtd = document.createElement('td')
+                            mailtd.textContent = splitAccountData[3]
+                            const passmailtd = document.createElement('td')
+                            passmailtd.textContent = splitAccountData[4]
+                            const cookietd = document.createElement('td')
+                            cookietd.textContent = splitAccountData[6]
+                            const statustd = document.createElement('td')
+                            statustd.textContent = splitAccountData[7]
+                            const proxyCol = document.createElement('td')
+                            proxyCol.textContent = 'Không dùng'
+                            tr.append(usernametd, passwordtd, _2fatd, mailtd, passmailtd, cookietd, statustd, proxyCol)
+                            selectedFunctionConstructor(tr)
+                            tr.id = i++
+                            console.log(tr)
+                            facebook_account_table.append(tr)
+                        })
+                    }
+                    //refreah table
+                    catch (err){
+                        console.log(err)
+                        handleErrorWhileResponse(facebook_account_table, err)
+                    }
+                    break;
+                default:
+                    break;
             }
         }
         else{
@@ -170,7 +261,7 @@ window.fileActions.replyInsertAccount((_event, value) => {
 
 //program action
 const run_program = document.querySelector('.run_program')
-
+const stop_program = document.querySelector('.stop_program')
 
 const getProgramSetting = () => {
     const options = {}
@@ -186,11 +277,27 @@ const getProgramSetting = () => {
     options['endDelay'] = parseInt(document.getElementsByName('delay_end')[0].value)
     options['totalThread'] = parseInt(document.getElementsByName('total_thread')[0].value)
     const new_pass = document.getElementsByName('new_pass')[0].value
-    if(new_pass)
+    options['headless'] = document.getElementById('toggle').checked
+    if(new_pass) {
         options['changePassword'] = true
         options['newPass'] = new_pass
+    }
+    options['userAgent'] = document.querySelector("input[name='user_agent']").value
     return options
 }
+
+stop_program.addEventListener('click', () => {
+    let data = [] 
+    getAllSelectedAccount().forEach(item => {
+        const chilren = item.childNodes
+        if(chilren[3].textContent != 'Không hoạt động')
+            data.push({
+                id: item.id
+            })
+    })
+    // console.log(runningAccount)
+    window.cmdActions.shutdownChrome(data)
+})
 
 run_program.addEventListener('click', () => {
     //get option
@@ -228,3 +335,99 @@ run_program.addEventListener('click', () => {
     // window.seleniumActions.startAction([{username: 'quannnn', password: '642003'}])
 })
 
+//facebookStart
+
+//open facebook tab
+
+const open_facebook_btn = document.querySelector('.facebook_icon')
+open_facebook_btn.addEventListener('click', () => {
+    document.querySelector('.facebook_body').classList.add('onScreen')
+    document.querySelector('.main_body').classList.remove('onScreen')
+})
+
+const open_home_btn = document.querySelector('.home_icon')
+open_home_btn.addEventListener('click', () => {
+    document.querySelector('.facebook_body').classList.remove('onScreen')
+    document.querySelector('.main_body').classList.add('onScreen')
+})
+
+//facebook select account
+
+const facebookFileSelector = document.getElementsByName('facebook_account_selection')[0]
+
+facebookFileSelector.addEventListener('click', async () => {
+    const data = await window.fileActions.insertAccount('facebook_table')
+})
+
+// window.seleniumActions.replyAccountData((_event, value) => {
+//     const {id, status, money, proxy, newPass} = value
+//     const row = document.getElementById(id)
+//     const chilren = row.childNodes
+//     console.log(value, chilren)
+//     chilren[2].textContent = money
+//     chilren[3].textContent = status
+//     chilren[4].textContent = proxy
+//     if(newPass)
+//         chilren[1].textContent = newPass
+// })
+
+window.fileActions.replyInsertAccount((_event, value) => {
+    const facebook_account_table = document.querySelector('.facebook_account_table tbody')
+        if(value.status == 200) {
+            try {
+                facebook_account_table.innerHTML =  `<tr class='disabled_row'>
+                                                <th>Tài khoản</th>
+                                                <th>Mật khẩu</th>
+                                                <th>2fa</th>
+                                                <th>mail</th>
+                                                <th>passmail</th>
+                                                <th>cookie</th>
+                                                <th>Trạng thái</th>
+                                                <th>Proxy</th>
+                                            </tr>`
+                res = value.res.trim().replace('\r', '').split('\n')
+                let i = 0;
+                res.forEach(account =>{
+                    const tr = document.createElement('tr')
+                    const splitAccountData = account.split('|')
+                    const usernametd = document.createElement(td)
+                    usernametd.textContent = splitAccountData[0]
+                    const passwordtd = document.createElement(td)
+                    passwordtd.textContent = splitAccountData[1]
+                    const _2fatd = document.createElement(td)
+                    _2fatd.textContent = splitAccountData[2]
+                    const mailtd = document.createElement(td)
+                    mailtd.textContent = splitAccountData[3]
+                    const passmailtd = document.createElement(td)
+                    passmailtd.textContent = splitAccountData[4]
+                    const cookietd = document.createElement(td)
+                    cookietd.textContent = splitAccountData[6]
+                    const statustd = document.createElement(td)
+                    statustd.textContent = 'Không hoạt động'
+
+                    // splitAccountData.forEach(item => {
+                    //     const td = document.createElement('td')
+                    //     td.textContent = item
+                    //     tr.appendChild(td)
+                    // })
+                    const proxyCol = document.createElement('td')
+                    proxyCol.textContent = 'Không dùng'
+                    tr.append(usernametd, passwordtd, _2fatd, mailtd, passmailtd, cookietd, statustd, proxyCol)
+                    selectedFunctionConstructor(tr)
+                    tr.id = i++
+                    facebook_account_table.appendChild(tr)
+                })
+            }
+            //refreah table
+            catch (err){
+                handleErrorWhileResponse(facebook_account_table, err)
+            }
+        }
+        else{
+            handleErrorWhileResponse(facebook_account_table, value.data)
+        }
+    })
+
+//facebook program action
+const facebooK_run_program = document.querySelector('.facebooK_run_program')
+const facebook_stop_program = document.querySelector('.facebook_stop_program')

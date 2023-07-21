@@ -1,7 +1,7 @@
 const {ipcRenderer, contextBridge} = require('electron')
 
 contextBridge.exposeInMainWorld('fileActions', {
-    insertAccount: () => ipcRenderer.invoke('file:insertAccount'),
+    insertAccount: (type) => ipcRenderer.invoke('file:insertAccount', type),
     replyInsertAccount: (callback) => ipcRenderer.on('file:replyInsertAccount', callback)
 })
 
@@ -19,4 +19,8 @@ contextBridge.exposeInMainWorld('seleniumActions', {
     */
     startAction: (data = [], options= {}) => ipcRenderer.invoke('selenium:startAction', data, options),
     replyAccountData: (callback) => ipcRenderer.on('selenium:replyAccountData', callback)
+})
+
+contextBridge.exposeInMainWorld('cmdActions', {
+    shutdownChrome : (data) => ipcRenderer.invoke('cmd:shutdownChrome', data)
 })

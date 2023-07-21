@@ -80,6 +80,7 @@ input[type='radio'] {
     pointer-events: none;
     transition: all ease .3s;
     background-color: white;
+    color: rgb(76, 76, 76);
 }
 
 .absolute_input input {
@@ -95,3 +96,54 @@ input[type='radio'] {
     top: 0;
     font-size: 12px;
 }
+
+/* toggle button */
+
+/* Style for the toggle button */
+.toggle-button {
+    position: relative;
+    display: inline-block;
+    width: 30px; /* Độ rộng của toggle button */
+    height: 14px; /* Chiều cao của toggle button */
+}
+
+/* Style for the slider (the button) */
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.4s;
+    border-radius: 14px; /* Độ cong của toggle button */
+}
+
+/* Change the appearance of the slider when it's checked (on) */
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 10px; /* Chiều cao của nút trượt */
+    width: 10px; /* Độ rộng của nút trượt */
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+}
+
+/* Ẩn checkbox */
+input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+}
+
+input[type="checkbox"]:checked + .slider {
+    background-color: #2196F3;
+}
+
+input[type="checkbox"]:checked + .slider:before {
+    transform: translateX(16px); /* Di chuyển nút trượt khi toggle bật */
+}
+

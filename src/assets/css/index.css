@@ -18,6 +18,16 @@
     min-width: 300px;
 }
 
+.facebook_icon, .home_icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+.body_config.open .facebook_icon,.body_config.open .home_icon{
+    display: none;
+}
+
 .body_config {
     max-width: 30px;
     z-index: 5;
@@ -102,10 +112,16 @@
     opacity: .7;
 }
 
+.headless_setting {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 /* end body config */
 
 /* start main body */
-.main_body{
+.main_body, .facebook_body{
     position: relative;
     left: 50px;
     top: 0;
@@ -113,6 +129,11 @@
     width: calc(100% - 70px);
     height: 100%;
     overflow: hidden;
+    display: none;
+}
+
+.onScreen {
+    display: block;
 }
 
 .program_action_wrapper_wrapper {
@@ -202,7 +223,7 @@
     overflow-y: scroll;
 }
 
-.main_body_table_wrapper .account_table {
+.main_body_table_wrapper .account_table, .facebook_account_table {
     width: 100%;
     border: 1px solid #ccc;
 }
@@ -212,21 +233,21 @@
     padding-bottom: 10px;
 }
 
-.main_body_table_wrapper .account_table tr{
+.main_body_table_wrapper .account_table tr, .facebook_account_table tr{
     height: 25px;
     cursor: pointer;
     transition: all ease .2s;
 }
 
 
-.main_body_table_wrapper .account_table tr td{
+.main_body_table_wrapper .account_table tr td, .facebook_account_table tr td{
     text-align: center;
 }
 
-.account_table tr:hover {
+.account_table tr:hover, .facebook_account_table tr:hover {
     background-color: rgb(10, 221, 158);
 }
-.account_table tr.row_selected {
+.account_table tr.row_selected, .facebook_account_table tr.row_selected {
     background-color: rgb(10, 221, 158);
 }
 
