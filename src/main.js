@@ -10,28 +10,17 @@ const SeleniumAction = require('./controller/controller.selenium')
 const { rejects } = require('assert')
 const { resolve } = require('path')
 const ResponseController = require('./controller/controller.response')
+const { getSavePath, saveConfig, changeSelectedSetting} = require('./controller/controller.setting')
 //create Browser
 let SELENIUM_QUEUE = 0
 let SELENIUM_ARRAY = []
 let complete = 0
-
-// const seleniumPromiseContructor = (account) => {
-//     // const AccountMoney = await SeleniumAction.checkViaSo({username, password});
-//     return new Promise((resolve, reject) => {        
-//         const worker = new Worker('./src/worker/worker.check_via_so.js', {
-//             workerData: account
-//         })
-//         worker.on('message', data => {
-//             resolve(data)
-//         })
-//         worker.on('error', (err) => {
-//             reject(err)
-//         })
-//     })
-//     // resolve(AccountMoney)
-// }
+const usedProxies = []
+let runTime = 0;
+let savedProxy = null
 
 const workerPromise = (array, event, options, position) => {
+    runTime++
     return new Promise((resolve, reject) => {
         const params = {account: array.shift(), sender: event.sender, options, position}
         const res = SeleniumAction.checkViaSo(params)
@@ -48,13 +37,21 @@ const backtrackWorking = ({total_thread, event, options}) => {
         return
     if(SELENIUM_QUEUE < total_thread) {
         SELENIUM_QUEUE++
-        options.normalProxy = options.autoProxy ? refreshAutoProxy(options.autoProxy) : options.normalProxy 
-        // if(options.autoProxy){
-        //     options.normalProxy = refreshAutoProxy(options.autoProxy)
-        // }
-        // else {
-
-        // }
+        if(runTime % options.accountsPerProxy == 0 && options.autoProxy) { 
+            if(savedProxy)
+            {
+                usedProxies.push(savedProxy)
+            }
+            console.log(usedProxies.includes(savedProxy))
+            if(runTime == 0)
+                savedProxy = refreshAutoProxy(options.autoProxy)
+            else {                
+                while(usedProxies.includes(savedProxy)) {
+                    savedProxy = refreshAutoProxy(options.autoProxy)
+                }
+            } 
+        }
+        options.normalProxy = options.autoProxy ? savedProxy : options.normalProxy 
         workerPromise(SELENIUM_ARRAY, event, options, SELENIUM_QUEUE)
         .then(data => {
             SELENIUM_QUEUE--
@@ -67,7 +64,7 @@ const backtrackWorking = ({total_thread, event, options}) => {
     }
 }
 
-
+ 
 const createBrowserWindow = () => {
 
     //handle function
@@ -120,26 +117,6 @@ const createBrowserWindow = () => {
                         })
                         worker.on('message', (value) => {
                             const proxies = value
-                                // while(SELENIUM_ARRAY.length > 0) {
-                                //     if(SELENIUM_QUEUE < options.totalThread){
-                                //         const proxy = refreshAutoProxy(proxies)
-                                //         options['normalProxy'] = proxy
-                                //         SELENIUM_QUEUE++
-                                //         workerPromise(SELENIUM_ARRAY, event, options)
-                                //         .then((data) => {
-                                //             console.log(data)
-                                //             SELENIUM_QUEUE--
-                                //             const proxy = refreshAutoProxy(proxies)
-                                //             options['normalProxy'] = proxy
-                                //             if(DOLATER_QUEUE.length){
-                                //                 workerPromise(DOLATER_QUEUE, event, options)
-                                //             }
-                                //         })
-                                //     }
-                                //     else {
-                                //         DOLATER_QUEUE.push(SELENIUM_ARRAY.shift())
-                                //     }
-                                // }
                                 options.autoProxy = proxies
                                 backtrackWorking({total_thread: options.totalThread, event, options})
                                 worker.terminate()
@@ -147,31 +124,57 @@ const createBrowserWindow = () => {
                     })
                 }
                 else {
-                    // while(SELENIUM_ARRAY.length > 0) {
-                    //     if(SELENIUM_QUEUE < options.totalThread){
-                    //         const proxy = options.normalProxy
-                    //         options['normalProxy'] = proxy
-                    //         SELENIUM_QUEUE++
-                    //         workerPromise(SELENIUM_ARRAY, event, options)
-                    //         .then((data) => {
-                    //             SELENIUM_QUEUE--
-                    //             const proxy = options.normalProxy
-                    //             options['normalProxy'] = proxy
-                    //             workerPromise(DOLATER_QUEUE, event, options)
-                    //         })
-                    //     }
-                    //     else {
-                    //         DOLATER_QUEUE.push(SELENIUM_ARRAY.shift())
-                    //     }
-                    // }
                     backtrackWorking({total_thread: options.totalThread, event, options})
                 }
                 break;
             case 'https://facebook.com' :
+                if(options.autoProxy?.length > 0) {
+                    new Promise((resolve, rejects) => {
+                        const worker =  new Worker('./src/worker/worker.proxy.js', {
+                            workerData: options.autoProxy
+                        })
+                        worker.on('message', (value) => {
+                            const proxies = value
+                            options.autoProxy = proxies
+                            backtrackWorking({total_thread: options.totalThread, event, options})
+                            worker.terminate()
+                        })
+                    })
+                }
+                else {
+                    backtrackWorking({total_thread: options.totalThread, event, options})
+                }
                 break;
             default:
                 break;
         }
+    }
+    
+    const createSettingWindow = async () => {
+        //setting response funtion define
+        
+        const advancedSettingWin = new BrowserWindow({
+            height:600,
+            width:900,
+            parent: win,
+            title: "Cài đặt nâng cao",
+            show: false,
+            icon: path.join(__dirname, './assets/images/app_icon.png'),
+            webPreferences: {
+                preload: path.join(__dirname, './preload/preload.setting.js')
+            }
+        })
+        advancedSettingWin.loadFile('src/childWindow/advancedSetting/index.html')
+        advancedSettingWin.on('ready-to-show', () => {
+            advancedSettingWin.show()
+        })
+        advancedSettingWin.on('window-all-closed', () => {
+            if(process.platform !== 'darwin') app.quit()
+            globalShortcut.unregisterAll()  
+        })
+        ipcMain.handle('setting:getSavePath', getSavePath)
+        ipcMain.handle('setting:saveSetting', saveConfig)
+        ipcMain.handle('setting:changeSelectedSetting', changeSelectedSetting)
     }
 
     //define Window
@@ -183,20 +186,15 @@ const createBrowserWindow = () => {
         },
         icon: path.join(__dirname, './assets/images/app_icon.png')
     })
-    const advancedSettingWin = new BrowserWindow({
-        height:500,
-        width:800,
-        parent: win,
-        title: "Cài đặt nâng cao",
-        show: false,
-        icon: path.join(__dirname, './assets/images/app_icon.png')
-    })
-    advancedSettingWin.loadFile('src/childWindow/advancedSetting')
+
+    
     win.loadFile('src/index.html')
 
     //ipcMain handle
     ipcMain.handle('file:insertAccount', handleInsertAccount)
     ipcMain.handle('selenium:startAction', handleSeleniumStartAction)
+    //ipcMain_Setting handle
+    ipcMain.handle('app:openAdvancedSetting', createSettingWindow)
 }
 
 app.on("ready", () => {

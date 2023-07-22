@@ -25,21 +25,31 @@ blur.addEventListener('click', (e) => {
     body_config_close_btn.innerHTML = `<i class='bx bx-cog' ></i>`
 })
 
+document.querySelector('.body_config_advance_btn').addEventListener('click', () => {
+    window.appActions.openAdvancedSetting()
+})
+
 // end handle toogle body_config
 
 // handle ui proxy session
 
 const radioProxies = document.querySelectorAll("input[type='radio'][name='proxy_type']")
 const proxyPaths = document.querySelectorAll("input[type='text'][name='proxy_path']")
+const accountsPerProxy = document.getElementsByName('proxy_per_account')[0]
 radioProxies[0].addEventListener('click', (e) => {
     proxyPaths[1].disabled = true
     proxyPaths[0].disabled = false
+    proxyPaths[0].value = 'http://192.168.1.7:22022/#/device-list/index'
     proxyPaths[1].value = ''
+    accountsPerProxy.disabled = false
+    accountsPerProxy.value = 1
 })
 radioProxies[1].addEventListener('click', (e) => {
     proxyPaths[1].disabled = false
     proxyPaths[0].disabled = true
     proxyPaths[0].value = ''
+    accountsPerProxy.disabled = true
+    accountsPerProxy.value = null
 })
 
 //define user ui: select account
@@ -82,6 +92,17 @@ toggleButton.addEventListener("change", function() {
   }
 });
 
+const data_dir_toggle = document.getElementById('toggle_data_dir')
+
+data_dir_toggle.addEventListener("change" ,() => {
+    if (this.checked) {
+        // Do something when the button is toggled on
+        console.log("Button is ON");
+      } else {
+        // Do something when the button is toggled off
+        console.log("Button is OFF");
+      }
+})
 
 const delay_start_input = document.getElementsByName('delay_start')[0]
 const delay_end_input = document.getElementsByName('delay_end')[0]
@@ -115,6 +136,7 @@ const handleErrorWhileResponse = (account_table, err, type) => {
                                     <th>Mật khẩu</th>
                                     <th>Số dư</th>
                                     <th>Trạng thái</th>
+                                    <th></th>
                                 </tr>
                                 <tr class='disabled_row'>
                                     <td colspan="4" aria-colspan="4">
@@ -180,6 +202,7 @@ window.fileActions.replyInsertAccount((_event, value) => {
                                                         <th>Số dư</th>
                                                         <th>Trạng thái</th>
                                                         <th>Proxy</th>
+                                                        <th></th>
                                                     </tr>`
                         res = value.res.trim().replace('\r', '').split('\n')
                         let i = 0;
@@ -194,6 +217,8 @@ window.fileActions.replyInsertAccount((_event, value) => {
                             const proxyCol = document.createElement('td')
                             proxyCol.textContent = 'Không dùng'
                             tr.append(proxyCol)
+                            const actionCol = document.createElement('td')
+                            actionCol.innerHTML('<button>Kiểm tra lịch sử</button>')
                             selectedFunctionConstructor(tr)
                             tr.id = i++
                             account_table.appendChild(tr)
@@ -269,6 +294,7 @@ const getProgramSetting = () => {
     const proxy_chance = document.getElementsByName('proxy_type')
     if(proxy_chance[0].checked){
         options['autoProxy'] = document.getElementsByName('proxy_path')[0].value
+        options['accountsPerProxy'] = parseInt(document.getElementsByName('proxy_per_account')[0].value)
     }
     else {
         options['normalProxy'] = document.getElementsByName('proxy_path')[1].value
@@ -431,3 +457,10 @@ window.fileActions.replyInsertAccount((_event, value) => {
 //facebook program action
 const facebooK_run_program = document.querySelector('.facebooK_run_program')
 const facebook_stop_program = document.querySelector('.facebook_stop_program')
+
+const getFbMoreOptions = () => {
+    const fboptions = {}
+    fboptions['fbStartPage'] = document.getElementsByName('startup_facebook_options')[0],value
+    fboptions['useDataDir'] = document.getElementById('.toggle_data_dir').value
+    return fboptions
+}

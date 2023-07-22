@@ -16,7 +16,15 @@
 }
 
 i {
-    font-size: 12px;
+    font-size: 24px;
+}
+
+p {
+    font-size: 14px;
+}
+
+input[type='text'] {
+    width: 95% !important;
 }
 
 
@@ -45,10 +53,10 @@ select {
     appearance: none;
     border: none;
     background-color: transparent;
-    padding: 8px 20px;
-    font-size: 16px;
-    color: #333;
-    border: 2px solid #ccc;
+    padding: 2px 6px;
+    font-size: 14px;
+    color: #000;
+    border: 1px solid #000;
     border-radius: 5px;
     cursor: pointer;
     outline: none;
@@ -93,4 +101,95 @@ option {
 option:checked {
     background-color: #2196F3;
     color: white;
+}
+
+
+/* main advanced setting css */
+
+.main_advanced_setting {
+    display: flex;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+}
+
+.selected_setting_side {
+    display: flex;
+    width: 20%;
+    flex-direction: column;
+    gap: 5px;
+    align-items: flex-start;
+    margin-top: 10px;
+    height: 400px;
+    justify-content: space-between;
+    position: relative;
+}
+
+.selected_setting_item_wrapper {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    gap: 5px;
+    align-items: flex-start;
+    height: 80%;
+}
+
+.selected_setting_item {
+    display: flex;
+    padding: 5px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    cursor: pointer;
+    transition: all ease .2s;
+    width: 70%;
+}
+.setting_action_wrapper {
+    display: flex;
+    width: 20%;
+    position: fixed;
+    bottom: 20px;
+}
+
+
+.selected_setting_item:hover {
+    background-color: #ccc;
+}
+
+
+/* main settting section */
+
+.setting_side {
+    width: 80%;
+    padding: 10px;
+}
+
+
+.mainSettingSection {
+    width: 100%;
+    display: none;
+    margin-right: 20px;
+}
+
+.onScreen.mainSettingSection {
+    display: block;
+}
+
+.location_setting_wrapper {
+    display: flex;
+}
+
+.location_setting_wrapper select {
+    margin-top: 5px;
+    margin-right: 20px;
+}
+
+.location_setting_wrapper .absolute_input {
+    flex: 1 1 auto
+}
+
+input[name='save_history_path_location'] {
+    cursor: pointer;
 }

@@ -9,7 +9,10 @@ const chrome = require('selenium-webdriver/chrome')
 const proxy = require('selenium-webdriver/proxy')
 const { urlIs } = require('selenium-webdriver/lib/until')
 const VIASO_ACCOUNT_PATH = path.join(__dirname, '../../acconts/account.viaso1.txt')
-
+const {
+    getCurrentSetting,
+    getIndexCurrentSetting
+} = require('./controller.setting')
 
 let screenDimensions = null
 let screenSize = null
@@ -23,24 +26,11 @@ app.on('ready', () => {
     windowWidth = screenSize.width / 4.0
 })
 class SeleniumAction {
-    static checkAccount = async ({username, password, newpass = false, changepass ="", proxy = ""}) => {
-        let driver = await new Builder().forBrowser(Browser.CHROME).build()
-        driver.get('https://via2fa.com/profile')
-        await driver.wait(until.elementIsVisible(driver.findElement(By.css('.btn.btn-primary.off-popup'))))
-        const ignorePopup = driver.findElement(By.css('.btn.btn-primary.off-popup'))
-        ignorePopup.click()
 
-        driver.wait(until.elementIsVisible(driver.findElement(By.css('.swal2-confirm.btn.btn-success')))).then(element => {
-            element.click()
-        } )
-        .catch(err => {
-            console.log(err)
-        })
-        // const closeIgnorePopup = driver.findElement(By.css('.swal2-confirm.btn.btn-success'))
-        // closeIgnorePopup.click()
-        // await driver.wait(until.elementIsVisible(driver.findElement(By.xpath('/html/body/div/div/div/div/div/div/div/div/div[1]/div/div[1]/div[3]/div[2]/div/div'))))
-        // const closeMessengerPoup = driver.findElement(By.xpath('/html/body/div/div/div/div/div/div/div/div/div[1]/div/div[1]/div[3]/div[2]/div/div'))
-        // closeMessengerPoup.click()
+    
+    static PrepareLocations = () => {
+        const currentSetting = getIndexCurrentSetting()
+        return getCurrentSetting(currentSetting.name)
     }    
 
     static checkViaSo = async (
@@ -56,6 +46,7 @@ class SeleniumAction {
     },
     position
     }) => {
+        const locations = SeleniumAction.PrepareLocations()
         let changePassStatus = false
         const normalProxy = options.normalProxy
         let chromeOptions = new chrome.Options()
@@ -75,29 +66,29 @@ class SeleniumAction {
         let driver = await new Builder().forBrowser('chrome' || Browser.CHROME).setChromeOptions(chromeOptions).build()
         // driver.get('https://check-host.net')
         // await setTimeout(2000)
-        driver.manage().window().setRect({width: windowWidth, height: windowHeigth, x: (position % 4) * windowWidth, y : ((position) % (4 /2)) * windowHeigth })
-        driver.get('https://viaso1.com/')
         // await driver.manage().window().setSize(700, 400)
         // await driver.manage().window().setPosition((position % 4) * windowWidth , ((position) % (4 /2)) * windowHeigth )
+        driver.manage().window().setRect({width: windowWidth, height: windowHeigth, x: (position % 4) * windowWidth, y : ((position) % (4 /2)) * windowHeigth })
+        driver.get(locations.login_web_path_location.location.replace("/login", ""))
         try {
-            await driver.wait(until.titleContains('Cung Cấp Via Cổ, Via XMDT')).then(async() => {
-                driver.findElement(By.id('login-username')).sendKeys(username)
+            await driver.wait(until.urlIs(locations.login_web_path_location.location)).then(async() => {
+                driver.findElement(By[locations.username_input_location.type](locations.username_input_location.location)).sendKeys(username)
                 await setTimeout(Math.floor((Math.random() * options.endDelay) + options.startDelay) * 1000)
-                driver.findElement(By.id('login-password')).sendKeys(password)
+                driver.findElement(By[locations.password_input_location.type](locations.password_input_location.location)).sendKeys(password)
                 await setTimeout(Math.floor((Math.random() * options.endDelay) + options.startDelay) * 1000)
-                driver.findElement(By.css('.btn.btn-hero-primary')).click()
+                driver.findElement(By[locations.login_button_location.type](locations.login_button_location.location)).click()
                 await setTimeout(Math.floor((Math.random() * options.endDelay) + options.startDelay) * 1000)
                 ResponseController.replyAccountData({id, money: 'Đang kiểm tra', status: 'Đã đăng nhập', proxy: normalProxy || 'Không dùng'}, sender)
                 await setTimeout(Math.floor((Math.random() * options.endDelay) + options.startDelay) * 1000)
-                if((await driver.getCurrentUrl()).toString() == 'https://viaso1.com/login') {
+                if((await driver.getCurrentUrl()).toString() == locations.login_web_path_location.location) {
                     ResponseController.replyAccountData({id, money: 'Chưa kiểm tra', status: 'Sai mật khẩu', proxy: normalProxy || 'Không dùng'}, sender)
                     FileController.ReplaceAccountData({filename: VIASO_ACCOUNT_PATH.toString() , username, money: 'Chưa kiểm tra', status: 'Sai mật khẩu'})
                     throw Error('Sai mật khẩu'.toString('utf-8'))
                 }
-                driver.get('https://viaso1.com/account')
-                await driver.wait(until.urlIs('https://viaso1.com/account')).then(async() => {
+                driver.get(locations.account_web_path_location.location)
+                await driver.wait(until.urlIs(locations.account_web_path_location.location)).then(async() => {
                     await setTimeout(Math.floor((Math.random() * options.endDelay) + options.startDelay) * 1000)
-                    const accountMoney = await driver.executeScript("return document.querySelector('div.row.justify-content-center > div > div > div.block-content > div:nth-child(2) > div > div:nth-child(4) > div > span > strong').textContent")
+                    const accountMoney = await driver.executeScript(`return document.querySelector('${locations.balance_location.location}').textContent`)
                     if(accountMoney) {
                         res = {
                             code: 200,
@@ -106,12 +97,12 @@ class SeleniumAction {
                         if(options.changePassword) {
                             try {
                                 ResponseController.replyAccountData({id, money: accountMoney + 'VNĐ', status: 'Đang đổi mật khẩu', proxy: normalProxy || 'Không dùng'}, sender)
-                                driver.findElement(By.name('current_password')).sendKeys(password)
-                                driver.findElement(By.name('password')).sendKeys(options.newPass)
+                                driver.findElement(By[locations.repass_input_location.type](locations.repass_input_location.location)).sendKeys(password)
+                                driver.findElement(By[locations.newpass_input_location.type](locations.newpass_input_location.location)).sendKeys(options.newPass)
                                 await setTimeout(Math.floor((Math.random() * options.endDelay) + options.startDelay) * 1000)
-                                driver.findElement(By.name('password_confirmation')).sendKeys(options.newPass)
+                                driver.findElement(By[locations.confirm_password_input_location.type](locations.confirm_password_input_location.location)).sendKeys(options.newPass)
                                 await setTimeout(Math.floor((Math.random() * options.endDelay) + options.startDelay) * 1000) 
-                                driver.findElement(By.css("button.btn.btn-primary[type='submit']")).click()
+                                driver.findElement(By[locations.submit_password_input_location.type](locations.submit_password_input_location.location)).click()
                                 await setTimeout(Math.floor((Math.random() * options.endDelay) + options.startDelay) * 1000) 
                                 ResponseController.replyAccountData({id, money: accountMoney + 'VNĐ', status: 'Đổi mật khẩu thành công', proxy: normalProxy || 'Không dùng'}, sender)
                                 changePassStatus = true
@@ -150,6 +141,23 @@ class SeleniumAction {
             driver.close()
         }
         return res 
+    }
+
+    static workingWithFacebook = async ({
+        account,
+        sender, 
+        options = {
+            newPass,        
+            changePassword,
+            normalProxy: 'Không dùng',
+            startDelay: 1,
+            endDelay: 3,
+            headless: false
+        },
+        position,
+        callback
+    }) => {
+
     }
 }
 

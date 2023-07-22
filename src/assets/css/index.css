@@ -89,13 +89,10 @@
     margin-bottom: 10px;
 }
 
-.margin_top {
-    margin-top: 10px;
-}
 
 .body_config--save {
     width: 100%;
-    margin-top: 50px;
+    margin-top: 10px;
     align-self: center;
     display: flex;
     align-items: center;
@@ -116,6 +113,15 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    justify-content: space-between;
+}
+.padding_right {
+    padding-right: 20px;
+}
+
+.proxy_per_account_wrapper{
+    display: flex;
+    align-items: center;
 }
 
 /* end body config */
@@ -274,8 +280,52 @@
 .disabled_row {
     background-color: transparent !important;
 }
-
 /* end table css */
 
 /* end main body */
 
+.facebook_more_options{
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    padding: 10px 20px;
+    position: relative;
+}
+
+.facebook_more_options::after {
+    content: 'Cài đặt thêm';
+    position: absolute;
+    top: -10px;
+    left: 10px;
+    background-color: white;
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.startup_facebook_options_wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 5px;
+}
+
+.startup_facebook_options {
+    width: 200px;
+    height: 30px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 5px;
+}
+
+.data_dir_setting{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between  ;
+}
+
+.facebook_wrapper_startup{
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}

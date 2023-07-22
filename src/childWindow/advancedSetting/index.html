@@ -5,6 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cài đặt nâng cao</title>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
     <link rel="stylesheet" href="../../assets/boxicons-2.1.4/css/boxicons.min.css">
     <link rel="stylesheet" href="../../assets/css/childWindow.advancedSetting.css">
     <link rel="stylesheet" href="../../assets/css/base.css">
@@ -19,53 +20,186 @@
                     <a class="add_config">Thêm cấu hình</a>
                 </div>
                 <div>
-                    <select name="setting_option">
-                        <option>Viaso1.com</option>
+                    <select value="null" class="config_selector" name="setting_option">
+                        <!-- config setup here -->
                     </select>
                 </div>
             </div>
-            <div class="login_setting login_central">
-                <h4>Trang đăng nhập</h4>
-                <div class="absolute_input">
-                    <input minlength="1" required type="text" name="login_position">
-                    <label for="proxy_value">Địa chỉ element login</label>
+            <div class="main_advanced_setting">
+                <div class="selected_setting_side">
+                    <div class="selected_setting_item_wrapper">
+                        <div class="selected_setting_item">
+                            <i class='bx bx-shopping-bag'></i>
+                            <p>Shop Via</p>
+                        </div>
+                        <div class="selected_setting_item">
+                            <i class='bx bxl-facebook-circle'></i>
+                            <p>Facebook</p>
+                        </div>
+                        <div class="selected_setting_item">
+                            <i class='bx bx-code-block'></i>
+                            <p>API Tích hợp</p>
+                        </div>
+                    </div>
+                    <div class="setting_action_wrapper none">
+                        <div class="selected_setting_item">
+                            <i class='bx bx-save'></i>
+                            <p>Lưu</p>
+                        </div>
+                    </div>
                 </div>
-                <div class="absolute_input">
-                    <input minlength="1" required type="text" name="login_position">
-                    <label for="proxy_value">Địa chỉ element password</label>
+                <div class="setting_side">
+                    <div class="mainSettingSection shopViaSetting onScreen">
+                        <div class="setting_wrapper">
+                            <div class="login_setting">
+                                <h3>Trang đăng nhập</h3>
+                                <div class="location_setting_wrapper margin_top">
+                                    <div class="absolute_input">
+                                        <input minlength="1" required type="text" name="login_web_path_location">
+                                        <label for="proxy_value">Địa chỉ trang</label>
+                                    </div>
+                                </div>
+                                <div class="location_setting_wrapper margin_top">
+                                    <div class="absolute_input">
+                                        <input minlength="1" required type="text" name="username_input_location">
+                                        <label for="proxy_value">Địa chỉ username input</label>
+                                    </div>
+                                    <select value="css" name="username_input_type">
+                                        <option value="css">css</option>
+                                        <option value="id">id</option>
+                                        <option value="name">name</option>
+                                        <option value="xpath">xpath</option>
+                                    </select>
+                                </div>
+                                <div class="location_setting_wrapper margin_top">
+                                    <div class="absolute_input">
+                                        <input minlength="1" required type="text" name="password_input_location">
+                                        <label for="proxy_value">Địa chỉ password input</label>
+                                    </div>
+                                    <select value="css" name="password_input_type">
+                                        <option value="css">css</option>
+                                        <option value="id">id</option>
+                                        <option value="name">name</option>
+                                        <option value="xpath">xpath</option>
+                                    </select>
+                                </div>
+                                <div class="location_setting_wrapper margin_top">
+                                    <div class="absolute_input">
+                                        <input minlength="1" required type="text" name="login_button_location">
+                                        <label for="proxy_value">Địa chỉ đăng nhập button</label>
+                                    </div>
+                                    <select value="css" name="login_button_type">
+                                        <option value="css">css</option>
+                                        <option value="id">id</option>
+                                        <option value="name">name</option>
+                                        <option value="xpath">xpath</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="horizontalLine"></div>
+                            <div class="login_setting">
+                                <h3>Trang tài khoản</h3>
+                                <div class="location_setting_wrapper margin_top">
+                                    <div class="absolute_input">
+                                        <input minlength="1" required type="text" name="account_web_path_location">
+                                        <label for="proxy_value">Địa chỉ trang</label>
+                                    </div>
+                                </div>
+                                <div class="location_setting_wrapper margin_top">
+                                    <div class="absolute_input">
+                                        <input minlength="1" required type="text" name="balance_location">
+                                        <label for="proxy_value">Địa chỉ số dư</label>
+                                    </div>
+                                    <select value="css" name="balance_type">
+                                        <option value="css">css</option>
+                                        <option value="id">id</option>
+                                        <option value="name">name</option>
+                                        <option value="xpath">xpath</option>
+                                    </select>
+                                </div>
+                                <div class="location_setting_wrapper margin_top">
+                                    <div class="absolute_input">
+                                        <input minlength="1" required type="text" name="repass_input_location">
+                                        <label for="proxy_value">Địa chỉ mật khẩu input</label>
+                                    </div>
+                                    <select value="css" name="repass_input_type">
+                                        <option value="css">css</option>
+                                        <option value="id">id</option>
+                                        <option value="name">name</option>
+                                        <option value="xpath">xpath</option>
+                                    </select>
+                                </div>
+                                <div class="location_setting_wrapper margin_top">
+                                    <div class="absolute_input">
+                                        <input minlength="1" required type="text" name="newpass_input_location">
+                                        <label for="proxy_value">Địa chỉ mật khẩu mới</label>
+                                    </div>
+                                    <select value="css" name="newpass_input_type">
+                                        <option value="css">css</option>
+                                        <option value="id">id</option>
+                                        <option value="name">name</option>
+                                        <option value="xpath">xpath</option>
+                                    </select>
+                                </div>
+                                <div class="location_setting_wrapper margin_top">
+                                    <div class="absolute_input">
+                                        <input minlength="1" required type="text" name="confirm_password_input_location">
+                                        <label for="proxy_value">Địa chỉ xác nhận mật khẩu</label>
+                                    </div>
+                                    <select value="css" name="confirm_password_input_type">
+                                        <option value="css">css</option>
+                                        <option value="id">id</option>
+                                        <option value="name">name</option>
+                                        <option value="xpath">xpath</option>
+                                    </select>
+                                </div>
+                                <div class="location_setting_wrapper margin_top">
+                                    <div class="absolute_input">
+                                        <input minlength="1" required type="text" name="submit_password_input_location">
+                                        <label for="submit_password_input_location">Địa chỉ nút đổi mật khẩu</label>
+                                    </div>
+                                    <select value="css" name="submit_password_input_type">
+                                        <option value="css">css</option>
+                                        <option value="id">id</option>
+                                        <option value="name">name</option>
+                                        <option value="xpath">xpath</option>
+                                    </select>
+                                </div>
+                                <div class="horizontalLine"></div>
+                            <div class="login_setting">
+                                <h3>Trang lịch sử mua hàng</h3>
+                                <div class="location_setting_wrapper margin_top">
+                                    <div class="absolute_input">
+                                        <input minlength="1" required type="text" name="history_web_path_location">
+                                        <label for="proxy_value">Địa chỉ trang</label>
+                                    </div>
+                                </div>
+                                <div class="location_setting_wrapper margin_top">
+                                    <div class="absolute_input">
+                                        <input minlength="1" required type="text" name="history_table_location">
+                                        <label for="proxy_value">Địa chỉ bảng lịch sử</label>
+                                    </div>
+                                    <select value="css" name="history_table_type">
+                                        <option value="css">css</option>
+                                        <option value="id">id</option>
+                                        <option value="name">name</option>
+                                        <option value="xpath">xpath</option>
+                                    </select>
+                                </div>
+                                <div class="location_setting_wrapper margin_top">
+                                    <div class="absolute_input">
+                                        <input value="Nhấp để chọn" minlength="1" required type="text" name="save_history_path_location">
+                                        <label for="proxy_value">Địa chỉ lưu lịch sử</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mainSettingSection facebookSetting"></div>
                 </div>
-                <div class="absolute_input">
-                    <input minlength="1" required type="text" name="login_position">
-                    <label for="proxy_value">Địa chỉ button đăng nhập</label>
-                </div>
-            </div>
-            <div class="get_accountdata_setting login_central">
-                <h4>Trang tài khoản</h4>
-                <div class="absolute_input">
-                    <input minlength="1" required type="text" name="login_position">
-                    <label for="proxy_value">Địa chỉ trang tài khoản</label>
-                </div>
-                <div class="absolute_input">
-                    <input minlength="1" required type="text" name="login_position">
-                    <label for="proxy_value">Địa chỉ lấy số dư</label>
-                </div>
-            </div>
-            <div class="get_history_setting login_central">
-                <h4>Trang lịch sử mua tài khoản </h4>
-                <div class="absolute_input">
-                    <input minlength="1" required type="text" name="login_position">
-                    <label for="proxy_value">Địa chỉ trang lịch sử mua</label>
-                </div>
-                <div class="absolute_input">
-                    <input minlength="1" required type="text" name="login_position">
-                    <label for="proxy_value">Địa chỉ bảng tài khoản</label>
-                </div>
-            </div>
-            <div class="button">
-                <!-- <button class="reset_button">Reset</button> -->
-                <button class="save_button">Lưu</button>
             </div>
         </div>
     </div>
 </body>
+<script src="../../rendered/rendered.setting.js"></script>
 </html>

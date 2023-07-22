@@ -65,7 +65,9 @@ input[type='radio'] {
     background-color: #ccc;
 }
 
-
+.margin_top {
+    margin-top: 10px;
+}
 
 .body h3 {
     font-size: 20px;
@@ -147,3 +149,18 @@ input[type="checkbox"]:checked + .slider:before {
     transform: translateX(16px); /* Di chuyển nút trượt khi toggle bật */
 }
 
+
+
+/* line */
+.horizontalLine {
+    display: flex;
+    align-items: center;
+    width: 550px;
+    border: 1px solid #999;
+    margin: 20px 0;
+}
+
+/* none display */
+.none {
+    display: none;
+}

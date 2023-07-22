@@ -24,3 +24,7 @@ contextBridge.exposeInMainWorld('seleniumActions', {
 contextBridge.exposeInMainWorld('cmdActions', {
     shutdownChrome : (data) => ipcRenderer.invoke('cmd:shutdownChrome', data)
 })
+
+contextBridge.exposeInMainWorld('appActions', {
+    openAdvancedSetting: () => ipcRenderer.invoke('app:openAdvancedSetting')
+})

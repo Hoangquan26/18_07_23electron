@@ -56,6 +56,14 @@
                   <label for="proxy_value">Địa chỉ proxy</label>
                 </div>
               </div>
+              <div class="margin_top">
+                <div class="proxy_per_account_wrapper">
+                  <p class="padding_right">Số accounts/proxy:</p>
+                  <input min="1" value="1" required type="number" name="proxy_per_account">
+                  <span class="padding_right"></span>
+                  <span>tài khoản</span> 
+                </div>
+              </div>
             </div>
             <div class="margin_top">
               <h3 class="margin_top">Cài đặt khác <i class='bx bxs-down-arrow' ></i></h3>
@@ -79,7 +87,7 @@
               <span>luồng</span>
             </div>
             <div class="margin_top">
-              <div class="headless_setting">
+              <div class="headless_setting padding_right">
                 <p>Ẩn trình duyệt</p>
                 <label class="toggle-button">
                   <input type="checkbox" id="toggle">
@@ -88,7 +96,7 @@
               </div>
             </div>
             <div class="body_config--save">
-              <a href="./childWindow/advancedSetting/index.html" target="_blank" class="body_config_advance_btn">Cài đặt nâng cao</a>
+              <a target="_blank" class="body_config_advance_btn">Cài đặt nâng cao</a>
               <!-- <button class="body_config--save_btn">Lưu</button> -->
             </div>
           </div>
@@ -167,17 +175,39 @@
                 <button name="facebook_account_selection">Thêm tài khoản</button>
               </div>
             </div>
-            <div class="program_action_wrapper_wrapper">
-              <div class="program_action_wrapper">
-                <button class="program_action facebook_run_program">Bắt đầu <i class='bx bx-play' ></i></button>
-                <button class="program_action facebook_stop_program">Dừng <i class='bx bx-stop'></i></button>
+            <!-- options -->
+            <div class="facebook_wrapper_startup">
+              <div class="facebook_more_options">
+                <div class="startup_facebook_options_wrapper">
+                  <p>Chọn đường dẫn </p>
+                  <select class="startup_facebook_options" name="startup_facebook_options">
+                    <option value="mbasic.facebook.com">mbasic.facebook.com</option>
+                    <option value="www.facebook.com">www.facebook.com</option>
+                  </select>
+                </div>
+                <div class="save_facebook_data_options margin_top">
+                  <div class="data_dir_setting padding_right">
+                    <p>Sử dụng data-dir</p>
+                    <label class="data-dir-toggle-button toggle-button">
+                      <input type="checkbox" id="toggle_data_dir">
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+                </div>
               </div>
-              <div class="absolute_input margin_top">
-                <input required minlength="1" type="text" name="facebook_new_pass">
-                <label for="facebook_new_pass">Mật khẩu mới</label>
+              <!-- startup -->
+              <div class="program_action_wrapper_wrapper">
+                <div class="program_action_wrapper">
+                  <button class="program_action facebook_run_program">Bắt đầu <i class='bx bx-play' ></i></button>
+                  <button class="program_action facebook_stop_program">Dừng <i class='bx bx-stop'></i></button>
+                </div>
+                <div class="absolute_input margin_top">
+                  <input required minlength="1" type="text" name="facebook_new_pass">
+                  <label for="facebook_new_pass">Mật khẩu mới</label>
+                </div>
               </div>
             </div>
-          </div>
+            </div>
 
           <!-- account table -->
           <div class="main_body_table_wrapper">
