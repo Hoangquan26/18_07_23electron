@@ -8,7 +8,7 @@ const child_process = require('child_process')
 const ProxyController = require('./controller/controller.proxy')
 const SeleniumAction = require('./controller/controller.selenium')
 const { rejects } = require('assert')
-const { resolve } = require('path')
+const { resolve, extname } = require('path')
 const ResponseController = require('./controller/controller.response')
 const { getSavePath, saveConfig, changeSelectedSetting} = require('./controller/controller.setting')
 //create Browser
@@ -19,10 +19,10 @@ const usedProxies = []
 let runTime = 0;
 let savedProxy = null
 
-const workerPromise = (array, event, options, position) => {
+const workerPromise = (array, event, options, position, shopViaOptions) => {
     runTime++
     return new Promise((resolve, reject) => {
-        const params = {account: array.shift(), sender: event.sender, options, position}
+        const params = {account: array.shift(), sender: event.sender, options, position, shopViaOptions}
         const res = SeleniumAction.checkViaSo(params)
         resolve(res)
     })
@@ -30,7 +30,7 @@ const workerPromise = (array, event, options, position) => {
 
 const refreshAutoProxy = (proxies) => proxies[Math.floor(Math.random() * proxies.length)]
 
-const backtrackWorking = ({total_thread, event, options}) => {
+const backtrackWorking = ({total_thread, event, options, shopViaOptions}) => {
     if(SELENIUM_ARRAY.length == 0 || complete)
         return
     if(SELENIUM_QUEUE > total_thread)
@@ -52,13 +52,13 @@ const backtrackWorking = ({total_thread, event, options}) => {
             } 
         }
         options.normalProxy = options.autoProxy ? savedProxy : options.normalProxy 
-        workerPromise(SELENIUM_ARRAY, event, options, SELENIUM_QUEUE)
+        workerPromise(SELENIUM_ARRAY, event, options, SELENIUM_QUEUE, shopViaOptions)
         .then(data => {
             SELENIUM_QUEUE--
-            return backtrackWorking({total_thread, event, options})
+            return backtrackWorking({total_thread, event, options, shopViaOptions})
         })
         if(SELENIUM_QUEUE < total_thread)
-            return backtrackWorking({total_thread, event, options})
+            return backtrackWorking({total_thread, event, options, shopViaOptions})
         else 
             return
     }
@@ -66,19 +66,20 @@ const backtrackWorking = ({total_thread, event, options}) => {
 
  
 const createBrowserWindow = () => {
-
     //handle function
     const handleInsertAccount = async (event, type) => {
         const {canceled, filePaths} = await dialog.showOpenDialog()
         if(!canceled){
             const filePath = filePaths[0].toString()
+            const fileName = path.basename(filePath, path.extname(filePath)).split('.')[1]
                 try {
                     const data = fs.readFileSync(filePath, 'utf-8')
                     console.log('ok')
                     event.sender.send('file:replyInsertAccount', {
                         status: 200,
                         res: data,
-                        type
+                        type,
+                        fileName
                     })
                 }
                 catch (err){
@@ -102,7 +103,9 @@ const createBrowserWindow = () => {
         endDelay: 3,
         headless: false,
         userAgent: ''
-    }) => {
+    },
+    shopViaOptions
+    ) => {
         complete = 0
         data?.forEach(async(account) => {
             SELENIUM_ARRAY.push((account))
@@ -118,13 +121,13 @@ const createBrowserWindow = () => {
                         worker.on('message', (value) => {
                             const proxies = value
                                 options.autoProxy = proxies
-                                backtrackWorking({total_thread: options.totalThread, event, options})
+                                backtrackWorking({total_thread: options.totalThread, event, options, shopViaOptions})
                                 worker.terminate()
                         })
                     })
                 }
                 else {
-                    backtrackWorking({total_thread: options.totalThread, event, options})
+                    backtrackWorking({total_thread: options.totalThread, event, options, shopViaOptions})
                 }
                 break;
             case 'https://facebook.com' :
@@ -177,6 +180,29 @@ const createBrowserWindow = () => {
         ipcMain.handle('setting:changeSelectedSetting', changeSelectedSetting)
     }
 
+    const createOrderHistoryWindow = async (sender, username, fileName) => {
+        const HistoryWindow = new BrowserWindow({
+            height:600,
+            width:900,
+            parent: win,
+            title: `Lịch sử mua hàng của ${username}`,
+            show: false,
+            icon: path.join(__dirname, './assets/images/app_icon.png'),
+            webPreferences: {
+                preload: path.join(__dirname, './preload/preload.orderHistory.js')
+            }
+        })
+        HistoryWindow.loadFile('src/childWindow/orderHistory/index.html')
+        HistoryWindow.on('ready-to-show', () => {
+            HistoryWindow.show()
+            const value = {
+                username: username,
+                fileName: fileName
+            }
+            HistoryWindow.webContents.send('window:setupData', value)
+        })
+    }
+
     //define Window
     const win = new BrowserWindow({
         height: 600,
@@ -193,8 +219,9 @@ const createBrowserWindow = () => {
     //ipcMain handle
     ipcMain.handle('file:insertAccount', handleInsertAccount)
     ipcMain.handle('selenium:startAction', handleSeleniumStartAction)
-    //ipcMain_Setting handle
+    //ipcMain_app handle
     ipcMain.handle('app:openAdvancedSetting', createSettingWindow)
+    ipcMain.handle('app:openOrderHistory', createOrderHistoryWindow)
 }
 
 app.on("ready", () => {

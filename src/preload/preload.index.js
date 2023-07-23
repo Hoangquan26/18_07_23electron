@@ -17,7 +17,7 @@ contextBridge.exposeInMainWorld('seleniumActions', {
         totalThread: number,
     }
     */
-    startAction: (data = [], options= {}) => ipcRenderer.invoke('selenium:startAction', data, options),
+    startAction: (data = [], options= {}, shopViaOptions) => ipcRenderer.invoke('selenium:startAction', data, options, shopViaOptions),
     replyAccountData: (callback) => ipcRenderer.on('selenium:replyAccountData', callback)
 })
 
@@ -26,5 +26,6 @@ contextBridge.exposeInMainWorld('cmdActions', {
 })
 
 contextBridge.exposeInMainWorld('appActions', {
-    openAdvancedSetting: () => ipcRenderer.invoke('app:openAdvancedSetting')
+    openAdvancedSetting: () => ipcRenderer.invoke('app:openAdvancedSetting'),
+    openOrderHistory: (username, fileName) => ipcRenderer.invoke('app:openOrderHistory', username, fileName)
 })

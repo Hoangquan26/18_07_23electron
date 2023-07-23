@@ -5,10 +5,11 @@ const { By, Key, Browser, Builder, until } = require('selenium-webdriver')
 const { workerData } = require('worker_threads')
 const ResponseController = require('./controller.response')
 const FileController = require('./controller.file')
+const RequestController = require('./controller.request')
 const chrome = require('selenium-webdriver/chrome')
 const proxy = require('selenium-webdriver/proxy')
-const { urlIs } = require('selenium-webdriver/lib/until')
 const VIASO_ACCOUNT_PATH = path.join(__dirname, '../../acconts/account.viaso1.txt')
+const CLONEFB_ACCOUNT_PATH = path.join(__dirname, '../../acconts/account.clonefb.txt')
 const {
     getCurrentSetting,
     getIndexCurrentSetting
@@ -21,7 +22,6 @@ let windowWidth = null
 app.on('ready', () => {
     screenDimensions =  screen.getPrimaryDisplay()
     screenSize = screenDimensions.size
-    console.log(screenSize)
     windowHeigth = screenSize.height / 2.0
     windowWidth = screenSize.width / 4.0
 })
@@ -44,9 +44,11 @@ class SeleniumAction {
         endDelay: 3,
         headless: false
     },
-    position
+    position,
+    shopViaOptions
     }) => {
         const locations = SeleniumAction.PrepareLocations()
+        const savePath = locations.login_web_path_location.location.includes('clonefb') ? CLONEFB_ACCOUNT_PATH : VIASO_ACCOUNT_PATH
         let changePassStatus = false
         const normalProxy = options.normalProxy
         let chromeOptions = new chrome.Options()
@@ -82,17 +84,37 @@ class SeleniumAction {
                 await setTimeout(Math.floor((Math.random() * options.endDelay) + options.startDelay) * 1000)
                 if((await driver.getCurrentUrl()).toString() == locations.login_web_path_location.location) {
                     ResponseController.replyAccountData({id, money: 'Chưa kiểm tra', status: 'Sai mật khẩu', proxy: normalProxy || 'Không dùng'}, sender)
-                    FileController.ReplaceAccountData({filename: VIASO_ACCOUNT_PATH.toString() , username, money: 'Chưa kiểm tra', status: 'Sai mật khẩu'})
+                    FileController.ReplaceAccountData({filename: savePath , username, money: 'Chưa kiểm tra', status: 'Sai mật khẩu'})
                     throw Error('Sai mật khẩu'.toString('utf-8'))
                 }
                 driver.get(locations.account_web_path_location.location)
                 await driver.wait(until.urlIs(locations.account_web_path_location.location)).then(async() => {
                     await setTimeout(Math.floor((Math.random() * options.endDelay) + options.startDelay) * 1000)
                     const accountMoney = await driver.executeScript(`return document.querySelector('${locations.balance_location.location}').textContent`)
+                    console.log(accountMoney)
                     if(accountMoney) {
                         res = {
                             code: 200,
                             data : accountMoney
+                        }
+                        if(shopViaOptions.saveShopingHistory) {
+                            ResponseController.replyAccountData({id, money: accountMoney + 'VNĐ', status: 'Đang lấy lịch sử', proxy: normalProxy || 'Không dùng'}, sender)
+                            const pageSource = (await driver.getPageSource()).toString()
+                            const regex = /'X-CSRF-TOKEN': '([^']+)/
+                            const X_CSRF_TOKEN = regex.exec(pageSource)[1]
+                            let cookie_str = ''
+                            let listCookie = await driver.manage().getCookies()
+                            listCookie = listCookie.reverse()
+                            listCookie.forEach(cookie => {
+                                cookie_str = cookie_str + (cookie.name + '=' + cookie.value + ';') 
+                            })
+                            const api_key = await RequestController.getApiKey(X_CSRF_TOKEN, cookie_str)
+                            RequestController.getListOrders(api_key, 'https://clonefb.vn/api/v1/orders')
+                            .then(data => {
+                                console.log('list order------',data)
+                                FileController.saveOrders(api_key, data, 'clonefb.via', username)
+                                ResponseController.replyAccountData({id, money: accountMoney + 'VNĐ', status: 'Lấy lịch sử thành công', proxy: normalProxy || 'Không dùng', savedHistory: true}, sender)
+                            })
                         }
                         if(options.changePassword) {
                             try {
@@ -115,11 +137,11 @@ class SeleniumAction {
                         await setTimeout(Math.floor((Math.random() * options.endDelay) + options.startDelay) * 1000) 
                         if(changePassStatus) {
                             ResponseController.replyAccountData({id, money: accountMoney + 'VNĐ', status: 'Kiểm tra thành công', proxy: normalProxy || 'Không dùng', newPass: options.newPass}, sender)
-                            FileController.ReplaceAccountData({filename: VIASO_ACCOUNT_PATH.toString() , username, money: accountMoney + ' VNĐ', newpass: options.newPass})
+                            FileController.ReplaceAccountData({filename: savePath , username, money: accountMoney + ' VNĐ', newpass: options.newPass})
                         }
                         else {
                             ResponseController.replyAccountData({id, money: accountMoney + 'VNĐ', status: 'Kiểm tra thành công', proxy: normalProxy || 'Không dùng'}, sender)
-                            FileController.ReplaceAccountData({filename: VIASO_ACCOUNT_PATH.toString() , username, money: accountMoney + ' VNĐ'})
+                            FileController.ReplaceAccountData({filename: savePath , username, money: accountMoney + ' VNĐ'})
                         }
                     }
                     else {
@@ -132,6 +154,7 @@ class SeleniumAction {
             })
         }
         catch(err){
+            console.log(err)
             res = {
                 status: 500,
                 data : err

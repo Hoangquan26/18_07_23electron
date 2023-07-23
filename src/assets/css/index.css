@@ -109,11 +109,16 @@
     opacity: .7;
 }
 
-.headless_setting {
+.headless_setting, .save_history_setting {
     display: flex;
     align-items: center;
     gap: 10px;
     justify-content: space-between;
+}
+
+.save_history_setting {
+    margin-top: 5px;
+    padding: 0 5px;
 }
 .padding_right {
     padding-right: 20px;
@@ -280,18 +285,31 @@
 .disabled_row {
     background-color: transparent !important;
 }
+
+.history_check_btn.checked_history:hover {
+    padding: 0px 5px;
+    border-radius: 5px;
+    background: rgb(241, 51, 51);
+    transition: all ease .3s;
+    color: white;
+}
+
+.history_check_btn.unchecked_history:hover{
+    background: #ccc;
+}
+
 /* end table css */
 
 /* end main body */
 
-.facebook_more_options{
+.facebook_more_options, .shop_via_more_options{
     border: 1px solid #ccc;
     border-radius: 10px;
     padding: 10px 20px;
     position: relative;
 }
 
-.facebook_more_options::after {
+.facebook_more_options::after, .shop_via_more_options::after {
     content: 'Cài đặt thêm';
     position: absolute;
     top: -10px;
@@ -324,7 +342,7 @@
     justify-content: space-between  ;
 }
 
-.facebook_wrapper_startup{
+.facebook_wrapper_startup, .shop_via_wrapper_startup{
     display: flex;
     gap: 10px;
     align-items: center;

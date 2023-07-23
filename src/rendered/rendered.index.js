@@ -177,21 +177,46 @@ fileSelector.addEventListener('click', async () => {
 })
 
 window.seleniumActions.replyAccountData((_event, value) => {
-    const {id, status, money, proxy, newPass} = value
+    const {id, status, money, proxy, newPass, savedHistory} = value
     const row = document.getElementById(id)
     const chilren = row.childNodes
-    console.log(value, chilren)
-    chilren[2].textContent = money
-    chilren[3].textContent = status
-    chilren[4].textContent = proxy
+    if(money)
+        chilren[2].textContent = money
+    if(status)
+        chilren[3].textContent = status
+    if(proxy)
+        chilren[4].textContent = proxy
+    if(savedHistory) {
+        chilren[5].classList.add('checked_history')
+        chilren[5].classList.remove('unchecked_history')
+    }
     if(newPass)
         chilren[1].textContent = newPass
 })
 
-window.fileActions.replyInsertAccount((_event, value) => {
+const showOrderHistory = (e ,name, fileName) => {
+    e.stopPropagation()
+    window.appActions.openOrderHistory(name, fileName)
+}
+
+const checkOrderHistory = async(configs) => {
+    try {
+        return await fetch(`../history/${configs}.via.json`)
+        .then(data =>{
+            const res = data.json()
+            return res
+        })
+    }
+    catch {
+        return {}
+    }
+}
+
+window.fileActions.replyInsertAccount(async (_event, value) => {
     const account_table = document.querySelector('.account_table')
+    const listOrderHistory = await checkOrderHistory(value.fileName)
+    console.log(listOrderHistory)
     const facebook_account_table = document.querySelector('.facebook_account_table')
-    console.log(facebook_account_table)
         if(value.status == 200) {
             switch(value.type) {
                 case 'main_table':
@@ -206,7 +231,7 @@ window.fileActions.replyInsertAccount((_event, value) => {
                                                     </tr>`
                         res = value.res.trim().replace('\r', '').split('\n')
                         let i = 0;
-                        res.forEach(account =>{
+                        res.forEach(async (account) =>{
                             const tr = document.createElement('tr')
                             const splitAccountData = account.split('|')
                             splitAccountData.forEach(item => {
@@ -216,9 +241,22 @@ window.fileActions.replyInsertAccount((_event, value) => {
                             })
                             const proxyCol = document.createElement('td')
                             proxyCol.textContent = 'Không dùng'
+                            const historyCol = document.createElement('td')
+                            historyCol.addEventListener('click', (e) => {
+                                if(historyCol.classList.contains('unchecked_history'))
+                                    return
+                                showOrderHistory(e, tr.childNodes[0].textContent, value.fileName)
+                            })
+                            // console.log(listOrderHistory[splitAccountData[0]], splitAccountData[0])
+                            if(listOrderHistory[splitAccountData[0]] != null) {
+                                historyCol.classList.add('history_check_btn', 'checked_history')
+                            }
+                            else {
+                                historyCol.classList.add('history_check_btn', 'unchecked_history')
+                            }
+                            historyCol.innerHTML ="<a>Kiểm tra lịch sử</a>"
                             tr.append(proxyCol)
-                            const actionCol = document.createElement('td')
-                            actionCol.innerHTML('<button>Kiểm tra lịch sử</button>')
+                            tr.append(historyCol)
                             selectedFunctionConstructor(tr)
                             tr.id = i++
                             account_table.appendChild(tr)
@@ -285,6 +323,12 @@ window.fileActions.replyInsertAccount((_event, value) => {
     })
 
 //program action
+
+const getShopViaOptions = () => {
+    return {
+        'saveShopingHistory' : document.getElementById('toggle_history_save').checked
+    }
+}
 const run_program = document.querySelector('.run_program')
 const stop_program = document.querySelector('.stop_program')
 
@@ -325,6 +369,8 @@ stop_program.addEventListener('click', () => {
     window.cmdActions.shutdownChrome(data)
 })
 
+
+
 run_program.addEventListener('click', () => {
     //get option
     const options = getProgramSetting()
@@ -357,7 +403,8 @@ run_program.addEventListener('click', () => {
         }
     })
     //start task
-    window.seleniumActions.startAction(sendData, options)
+    const shopViaOptions = getShopViaOptions()
+    window.seleniumActions.startAction(sendData, options, shopViaOptions)
     // window.seleniumActions.startAction([{username: 'quannnn', password: '642003'}])
 })
 

@@ -119,14 +119,25 @@
                 <button name="account_selection">Thêm tài khoản</button>
               </div>
             </div>
-            <div class="program_action_wrapper_wrapper">
-              <div class="program_action_wrapper">
-                <button class="program_action run_program">Bắt đầu <i class='bx bx-play' ></i></button>
-                <button class="program_action stop_program">Dừng <i class='bx bx-stop'></i></button>
+            <div class="shop_via_wrapper_startup">
+              <div class="shop_via_more_options">
+                <div class="save_history_setting padding_right">
+                  <p>Lưu lịch sử mua hàng</p>
+                  <label class="toggle-button">
+                    <input type="checkbox" id="toggle_history_save">
+                    <span class="slider"></span>
+                  </label>
+                </div>
               </div>
-              <div class="absolute_input margin_top">
-                <input required minlength="1" type="text" name="new_pass">
-                <label for="new_pass">Mật khẩu mới</label>
+              <div class="program_action_wrapper_wrapper">
+                <div class="program_action_wrapper">
+                  <button class="program_action run_program">Bắt đầu <i class='bx bx-play' ></i></button>
+                  <button class="program_action stop_program">Dừng <i class='bx bx-stop'></i></button>
+                </div>
+                <div class="absolute_input margin_top">
+                  <input required minlength="1" type="text" name="new_pass">
+                  <label for="new_pass">Mật khẩu mới</label>
+                </div>
               </div>
             </div>
           </div>
@@ -144,9 +155,10 @@
                   <th>Số dư</th>
                   <th>Trạng thái</th>
                   <th>Proxy</th>
+                  <th>Lịch sử</th>
                 </tr>
                 <tr class="disabled_row"> 
-                  <td colspan="5" aria-colspan="4">
+                  <td colspan="6" aria-colspan="4">
                     <div class="none_account_image_wrapper">
                       <img class="none_account_image" src="./assets/images/NoneAccountExceptionjfif.jfif"/>
                       <h3>Chưa có tài khoản</h3>
