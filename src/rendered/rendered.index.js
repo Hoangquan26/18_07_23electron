@@ -354,6 +354,31 @@ stop_program.addEventListener('click', () => {
     window.cmdActions.shutdownChrome(data)
 })
 
+const listConfigs = []
+const startUp = document.querySelector('.startup_options')
+
+startUp.addEventListener('change', e => {
+    window.settingAction.changeSelectedSetting(e.target.value)
+})
+fetch('../configs/index.json')
+.then(data => data.json())
+.then(data => {
+    data = data.listConfig
+    listConfigs.push(data)
+    data.forEach(config => {
+        const options = document.createElement('option')
+        options.textContent = config.name
+        options.value = config.name
+        if(config.selected) {
+            currentConfig = config.name
+        }
+        startUp.append(options)
+    })
+    startUp.value = currentConfig
+    return currentConfig
+})
+
+
 const getSendData = (callback) => {
     const rowData = callback()
     const sendData = []

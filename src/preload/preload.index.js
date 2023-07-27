@@ -31,3 +31,7 @@ contextBridge.exposeInMainWorld('appActions', {
     openAdvancedSetting: () => ipcRenderer.invoke('app:openAdvancedSetting'),
     openOrderHistory: (username, fileName) => ipcRenderer.invoke('app:openOrderHistory', username, fileName)
 })
+
+contextBridge.exposeInMainWorld('settingAction', {
+    changeSelectedSetting : (data) => ipcRenderer.invoke('setting:changeSelectedSetting', data),
+})

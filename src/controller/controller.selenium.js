@@ -82,7 +82,7 @@ class SeleniumAction {
         let res = {}
         let changePassStatus = false
         const { driver, normalProxy} = await this.createDriver(options)
-        driver.manage().window().setRect({width: windowWidth, height: windowHeigth, x: (position % 4) * windowWidth, y : ((position) % (4 /2)) * windowHeigth })
+        driver.manage().window().setRect({width: windowWidth, height: windowHeigth, x: (position % 4) * windowWidth, y : ((position) % (4 / 2)) * windowHeigth })
         ResponseController.replyAccountData({id, money: 'Đang kiểm tra', status: 'Đang đăng nhập', proxy: normalProxy || 'Không dùng'}, sender)
        
         
@@ -110,11 +110,10 @@ class SeleniumAction {
                         try{
                             console.log(notify)
                             const element = await driver.findElement(By.css(notify))
-                            console.log('click')
                             element.click()
                         }
-                        catch {
-
+                        catch (e){
+                            console.log(e)
                         }
                         // console.log(notify)
                         // await driver.executeScript(`document.querySelectorAll("${notify}").forEach(item => item.remove())`)
@@ -141,7 +140,6 @@ class SeleniumAction {
                             const api_key = await RequestController.getApiKey(X_CSRF_TOKEN, cookie_str, locations.api.api_key)
                             RequestController.getListOrders(api_key, locations.api.list_order)
                             .then(data => {
-                                console.log('list order------',data)
                                 // FileController.saveOrders(api_key, data, 'clonefb.via', username, locations.api.order_detail)
                                 FileController.saveOrders(api_key, data, locations.history_web_path_location.location, username, locations.api.order_detail)
                                 ResponseController.replyAccountData({id, money: accountMoney + 'VNĐ', status: 'Lấy lịch sử thành công', proxy: normalProxy || 'Không dùng', savedHistory: true}, sender)
@@ -248,7 +246,8 @@ class SeleniumAction {
                         await setTimeout((Math.floor(Math.random() * options.endDelay) + options.startDelay) * 1000)
                         driver.findElement(By.id('checkpointSubmitButton-actual-button')).click()
                         try {
-                            rememberBrowser(driver, options)
+                            await driver.wait(until.urlContains('/login/checkpoint'))
+                            SeleniumAction.rememberBrowser(driver, options)
                             break;
                         }
                         catch (err) {
@@ -258,43 +257,53 @@ class SeleniumAction {
                     }
                     await setTimeout((Math.floor(Math.random() * options.endDelay) + options.startDelay) * 1000)
                     let url = await driver.getCurrentUrl()
-                    if(url.includes('checkpoint' && !url.includes('956') && !url.includes('282'))) {
-                        try {
-                            ResponseController.replyFacebookAccountData({id, status: 'Acc checkpoint'}, sender)
-                            await setTimeout((Math.floor(Math.random() * options.endDelay) + options.startDelay) * 1000)
-                            driver.findElement(By.id('checkpointSubmitButton-actual-button')).click()
-                            await driver.wait(until.elementLocated(By.id('checkpointSubmitButton-actual-button')))
-                            .then(element => element.click())
-                            rememberBrowser(driver, options)
+                    const cookie = await driver.manage().getCookies()
+                    if(!cookie['c_user']){
+                        if(url.includes('login/checkpoint')) {
+                            while(driver.findElement(By.id('checkpointSubmitButton-actual-button'))) {
+                                await driver.findElement(By.id('checkpointSubmitButton-actual-button')).click()
+                                await setTimeout((Math.floor(Math.random() * options.endDelay) + options.startDelay) * 1000)
+                            }
+                            SeleniumAction.rememberBrowser(driver, options)
+
                         }
-                        catch {
-                            ResponseController.replyFacebookAccountData({id, status: 'Giải fail'}, sender)
+                        else if(url.includes('checkpoint' && !url.includes('956') && !url.includes('282'))) {
+                            try {
+                                ResponseController.replyFacebookAccountData({id, status: 'Acc checkpoint'}, sender)
+                                await setTimeout((Math.floor(Math.random() * options.endDelay) + options.startDelay) * 1000)
+                                driver.findElement(By.id('checkpointSubmitButton-actual-button')).click()
+                                await driver.wait(until.elementLocated(By.id('checkpointSubmitButton-actual-button')))
+                                .then(element => element.click())
+                                rememberBrowser(driver, options)
+                            }
+                            catch {
+                                ResponseController.replyFacebookAccountData({id, status: 'Giải fail'}, sender)
+                            }
                         }
-                    }
-                    else if(url.includes('956')) {
-                        try {
-                            ResponseController.replyFacebookAccountData({id, status: 'Checkpoint 956'}, sender)
-                            await driver.findElement(By.css('#root > table > tbody > tr > td > div > div.bg > a')).click()
-                            await setTimeout((Math.floor(Math.random() * options.endDelay) + options.startDelay) * 1000)
-                            await driver.findElement(By.css('#root > table > tbody > tr > td > div > div > a')).click()
-                            await setTimeout((Math.floor(Math.random() * options.endDelay) + options.startDelay) * 1000)
-                            await driver.findElement(By.css("input[type='submit']")).click()
-                            await setTimeout((Math.floor(Math.random() * options.endDelay) + options.startDelay) * 1000)
-                            await driver.findElement(By.css("input[type='submit']")).click()
-                            await setTimeout((Math.floor(Math.random() * options.endDelay) + options.startDelay) * 1000)
-                            await driver.findElement(By.css("input[type='text']")).sendKeys('...')
-                            await setTimeout((Math.floor(Math.random() * options.endDelay) + options.startDelay) * 1000)
-                            await driver.findElements(By.css("input[type='submit']"))[1].click()
+                        else if(url.includes('956')) {
+                            try {
+                                ResponseController.replyFacebookAccountData({id, status: 'Checkpoint 956'}, sender)
+                                await driver.findElement(By.css('#root > table > tbody > tr > td > div > div.bg > a')).click()
+                                await setTimeout((Math.floor(Math.random() * options.endDelay) + options.startDelay) * 1000)
+                                await driver.findElement(By.css('#root > table > tbody > tr > td > div > div > a')).click()
+                                await setTimeout((Math.floor(Math.random() * options.endDelay) + options.startDelay) * 1000)
+                                await driver.findElement(By.css("input[type='submit']")).click()
+                                await setTimeout((Math.floor(Math.random() * options.endDelay) + options.startDelay) * 1000)
+                                await driver.findElement(By.css("input[type='submit']")).click()
+                                await setTimeout((Math.floor(Math.random() * options.endDelay) + options.startDelay) * 1000)
+                                await driver.findElement(By.css("input[type='text']")).sendKeys('...')
+                                await setTimeout((Math.floor(Math.random() * options.endDelay) + options.startDelay) * 1000)
+                                await driver.findElements(By.css("input[type='submit']"))[1].click()
+                            }
+                            catch {
+                                
+                            }
                         }
-                        catch {
-                            
-                        }
-                    }
-                    else if(url.includes('home.php') || url.includes('gettingstarted')) {
+                    } 
+                    else if(url.includes('home.php') || url.includes('gettingstarted') || cookie['c_user']) {
+                        const str_cookie =  CookieController.convertJsonCookieToText(cookie)
                         ResponseController.replyFacebookAccountData({id, status: 'Đăng nhập thành công'}, sender)
                         ResponseController.replyFacebookAccountData({id, status: 'Đang lấy cookie'}, sender)
-                        const cookie = await driver.manage().getCookies()
-                        const str_cookie =  CookieController.convertJsonCookieToText(cookie)
                         FileController.ReplaceFacebookAccountData({filename: FACEBOOK_ACCOUNT_PATH, cookie: str_cookie, username})
                         ResponseController.replyFacebookAccountData({id, status: 'Lấy cookie thành công' , cookie: str_cookie}, sender)
                     }
@@ -317,11 +326,11 @@ class SeleniumAction {
                     await driver.navigate().refresh()
                     driver.wait(until.elementLocated(By.id('m_news_feed_stream')))
                     .then(() => {
-                        console.log('Đăng nhập thành công')
+                        ResponseController.replyFacebookAccountData({id, status: 'Đăng nhập thành công'}, sender)
 
                     })
                     .catch(err => {
-                        console.log('Đăng nhập thất bại')
+                        ResponseController.replyFacebookAccountData({id, status: 'Đăng nhập thất bại'}, sender)
                     })
                     await setTimeout((Math.floor(Math.random() * options.endDelay) + options.startDelay) * 10000)
                 }
@@ -330,12 +339,12 @@ class SeleniumAction {
                 console.log(err)
                 let currentUrl = await driver.getCurrentUrl()
                 if(currentUrl.includes(fbPath.replace('facebook.com', '') && !currentUrl.includes('login') && currentUrl.includes('checkpoint')))
-                    console.log('login success')
+                    ResponseController.replyFacebookAccountData({id, status: currentUrl, proxy: options.normalProxy, code: 202}, sender)
             })
             .finally(async() => {
                 await setTimeout((Math.floor(Math.random() * options.endDelay) + options.startDelay) * 1000)
-                driver.close()
                 ResponseController.replyFacebookAccountData({id, status: 'Hoàn thành', proxy: options.normalProxy, code: 202}, sender)
+                driver.close()
             })
         }
         catch(err) {

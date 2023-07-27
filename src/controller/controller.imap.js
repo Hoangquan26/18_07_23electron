@@ -13,6 +13,7 @@ class ImapController {
 
     openInbox(cb) {
         this.Imap.openBox('INBOX', true, cb);
+            
     }
     
     // Hàm callback xử lý khi có lỗi xảy ra trong quá trình kết nối
@@ -21,10 +22,11 @@ class ImapController {
     }
 
     listenFbCode = async() => {
-        this.Imap.once('ready', () => {
-            this.openInbox((err, box) => {
+        const imap = this.Imap
+        imap.once('ready', () => {
+            imap.openBox('INBOX',true,(err, box) => {
                 if(err) throw err
-                this.Imap.search(['UNSEEN', ['FROM', 'security@facebookmail.com']], (error, uids) => {
+                imap.search([['FROM', 'security@facebookmail.com']], (error, uids) => {
                     if(err) throw err
                     if(uids.length === 0) {
                         console.log('Không tìm thấy thư phù hợp.');
@@ -32,7 +34,7 @@ class ImapController {
                         return;
                     }
 
-                    const fetch = this.Imap.fetch(uids, {bodies: ''})
+                    const fetch = imap.fetch(uids, {bodies: ''})
                     fetch.on('message', (message, seqno) => {
                         console.log('Email #', seqno)
                         message.on('body', (stream, info) => {
@@ -48,13 +50,14 @@ class ImapController {
                     })
                     fetch.once('end', function () {
                         // Đóng kết nối sau khi đã đọc thư
+                        imap.end()
                     });
                 })
             })
         })
     
-        this.Imap.connect()
-        this.Imap.on('error', this.onError)
+        imap.connect()
+        imap.on('error', this.onError)
     }
 }
 

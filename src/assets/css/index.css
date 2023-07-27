@@ -117,8 +117,7 @@
 }
 
 .save_history_setting {
-    margin-top: 5px;
-    padding: 0 5px;
+    margin-top: 10px;
 }
 .padding_right {
     padding-right: 20px;
@@ -313,6 +312,8 @@ tr.warn {
     position: relative;
 }
 
+
+
 .facebook_more_options::after, .shop_via_more_options::after {
     content: 'Cài đặt thêm';
     position: absolute;
@@ -323,14 +324,14 @@ tr.warn {
     font-size: 16px;
 }
 
-.startup_facebook_options_wrapper {
+.startup_facebook_options_wrapper, .startup_options_wrapper {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 5px;
 }
 
-.startup_facebook_options {
+.startup_facebook_options, .startup_options {
     width: 200px;
     height: 30px;
     font-size: 16px;
@@ -350,4 +351,5 @@ tr.warn {
     display: flex;
     gap: 10px;
     align-items: center;
+    justify-content: space-between;
 }

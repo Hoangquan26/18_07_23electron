@@ -235,13 +235,22 @@ const createBrowserWindow = () => {
 
     
     win.loadFile('src/index.html')
-
+    ipcMain.handle('setting:changeSelectedSetting', changeSelectedSetting)
     //ipcMain handle
     ipcMain.handle('file:insertAccount', handleInsertAccount)
     ipcMain.handle('selenium:startAction', handleSeleniumStartAction)
     //ipcMain_app handle
     ipcMain.handle('app:openAdvancedSetting', createSettingWindow)
     ipcMain.handle('app:openOrderHistory', createOrderHistoryWindow)
+    // const openDevTool = globalShortcut.register("Alt+A", () => {
+    //     // const focusedWindow = BrowserWindow.getFocusedWindow()
+    //     console.log('shortcut')
+        
+    //     // console.log
+    // })
+    // if(!globalShortcut.isRegistered("Alt+A") || !openDevTool)
+    // console.log('not register')    
+
 }
 
 app.on("ready", () => {
@@ -254,12 +263,6 @@ app.on("ready", () => {
         })
     })
     //define shortcut
-    const openDevTool = globalShortcut.register("F12", () => {
-        const focusedWindow = BrowserWindow.getFocusedWindow()
-        if(focusedWindow) {
-            focusedWindow.webContents.openDevTools()
-        }
-    })
 
     createBrowserWindow()
 
