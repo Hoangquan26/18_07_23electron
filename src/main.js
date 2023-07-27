@@ -19,7 +19,7 @@ const usedProxies = []
 let runTime = 0;
 let savedProxy = null
 
-const workerPromise = (array, event, options, position, shopViaOptions) => {
+const workerPromiseShopVia = (array, event, options, position, shopViaOptions) => {
     runTime++
     return new Promise((resolve, reject) => {
         const params = {account: array.shift(), sender: event.sender, options, position, shopViaOptions}
@@ -28,9 +28,18 @@ const workerPromise = (array, event, options, position, shopViaOptions) => {
     })
 }
 
+const workerPromiseFacebook = (array, event, options, position, facebookOptions) => {
+    runTime++
+    return new Promise((resolve, reject) => {
+        const params = {account: array.shift(), sender: event.sender, options, position, facebookOptions}
+        const res = SeleniumAction.workingWithFacebook(params)
+        resolve(res)
+    })
+}
+
 const refreshAutoProxy = (proxies) => proxies[Math.floor(Math.random() * proxies.length)]
 
-const backtrackWorking = ({total_thread, event, options, shopViaOptions}) => {
+const backtrackWorking = ({total_thread, event, options, mainOptions, callback}) => {
     if(SELENIUM_ARRAY.length == 0 || complete)
         return
     if(SELENIUM_QUEUE > total_thread)
@@ -42,7 +51,7 @@ const backtrackWorking = ({total_thread, event, options, shopViaOptions}) => {
             {
                 usedProxies.push(savedProxy)
             }
-            console.log(usedProxies.includes(savedProxy))
+            // console.log(usedProxies.includes(savedProxy))
             if(runTime == 0)
                 savedProxy = refreshAutoProxy(options.autoProxy)
             else {                
@@ -52,13 +61,13 @@ const backtrackWorking = ({total_thread, event, options, shopViaOptions}) => {
             } 
         }
         options.normalProxy = options.autoProxy ? savedProxy : options.normalProxy 
-        workerPromise(SELENIUM_ARRAY, event, options, SELENIUM_QUEUE, shopViaOptions)
+        callback(SELENIUM_ARRAY, event, options, SELENIUM_QUEUE, mainOptions)
         .then(data => {
             SELENIUM_QUEUE--
-            return backtrackWorking({total_thread, event, options, shopViaOptions})
+            return backtrackWorking({total_thread, event, options, mainOptions, callback})
         })
         if(SELENIUM_QUEUE < total_thread)
-            return backtrackWorking({total_thread, event, options, shopViaOptions})
+            return backtrackWorking({total_thread, event, options, mainOptions, callback})
         else 
             return
     }
@@ -74,7 +83,6 @@ const createBrowserWindow = () => {
             const fileName = path.basename(filePath, path.extname(filePath)).split('.')[1]
                 try {
                     const data = fs.readFileSync(filePath, 'utf-8')
-                    console.log('ok')
                     event.sender.send('file:replyInsertAccount', {
                         status: 200,
                         res: data,
@@ -104,15 +112,15 @@ const createBrowserWindow = () => {
         headless: false,
         userAgent: ''
     },
-    shopViaOptions
+    mainOptions
     ) => {
         complete = 0
-        data?.forEach(async(account) => {
-            SELENIUM_ARRAY.push((account))
-            ResponseController.replyAccountData({id: account.id, status: 'Trong hàng chờ'}, event.sender)
-        })
         switch(options.path) {
-            case 'https://viaso1.com/':
+            case 'ShopVia':
+                data?.forEach(async(account) => {
+                    SELENIUM_ARRAY.push((account))
+                    ResponseController.replyAccountData({id: account.id, status: 'Trong hàng chờ'}, event.sender)
+                })
                 if(options.autoProxy?.length > 0) {
                     new Promise((resolve, rejects) => {
                         const worker =  new Worker('./src/worker/worker.proxy.js', {
@@ -121,32 +129,44 @@ const createBrowserWindow = () => {
                         worker.on('message', (value) => {
                             const proxies = value
                                 options.autoProxy = proxies
-                                backtrackWorking({total_thread: options.totalThread, event, options, shopViaOptions})
+                                backtrackWorking({total_thread: options.totalThread, event, options,mainOptions, callback: workerPromiseShopVia})
                                 worker.terminate()
                         })
                     })
                 }
                 else {
-                    backtrackWorking({total_thread: options.totalThread, event, options, shopViaOptions})
+                    backtrackWorking({total_thread: options.totalThread, event, options,mainOptions, callback: workerPromiseShopVia})
                 }
                 break;
-            case 'https://facebook.com' :
-                if(options.autoProxy?.length > 0) {
-                    new Promise((resolve, rejects) => {
-                        const worker =  new Worker('./src/worker/worker.proxy.js', {
-                            workerData: options.autoProxy
+            case 'Facebook' :
+                data?.forEach(async(account) => {
+                    if(account.status == 'Không hoạt động') {
+                        SELENIUM_ARRAY.push((account))
+                        ResponseController.replyFacebookAccountData({id: account.id, status: 'Trong hàng chờ'}, event.sender)
+                    }
+                    else {
+                        ResponseController.replyFacebookAccountData({id: account.id, code: 500}, event.sender)
+                    }
+                })
+                if(SELENIUM_ARRAY.length > 0) {
+                    if(options.autoProxy?.length > 0) {
+                        new Promise((resolve, rejects) => {
+                            const worker =  new Worker('./src/worker/worker.proxy.js', {
+                                workerData: options.autoProxy
+                            })
+                            worker.on('message', (value) => {
+                                const proxies = value
+                                options.autoProxy = proxies
+                                backtrackWorking({total_thread: options.totalThread, event, options,mainOptions, callback: workerPromiseFacebook})
+                                worker.terminate()
+                            })
                         })
-                        worker.on('message', (value) => {
-                            const proxies = value
-                            options.autoProxy = proxies
-                            backtrackWorking({total_thread: options.totalThread, event, options})
-                            worker.terminate()
-                        })
-                    })
+                    }
+                    else {
+                        backtrackWorking({total_thread: options.totalThread, event, options,mainOptions, callback: workerPromiseFacebook})
+                    }
                 }
-                else {
-                    backtrackWorking({total_thread: options.totalThread, event, options})
-                }
+                event.sender.send('selenium:offReplyFacebookAccountData')
                 break;
             default:
                 break;

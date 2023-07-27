@@ -1,7 +1,7 @@
 const fs = require('node:fs')
 class RequestController {
-    static getApiKey = async (x_csrf_token, cookie) =>  {        
-        return await fetch('https://clonefb.vn/updateAPIKEY', {
+    static getApiKey = async (x_csrf_token, cookie, api) =>  {        
+        return await fetch(api, {
             method: 'POST',
             headers :{
                 "X-Csrf-Token" : x_csrf_token,
@@ -69,6 +69,20 @@ class RequestController {
         }) 
         return res
     }
+
+
+    //facebook
+
+    static get2faCode = async(_2fa) => {
+        const res = fetch(`https://2fa.live/tok/${_2fa}`)
+        .then(data => {
+            return data.json()
+        })
+        .then(data => {
+            return data.token
+        })
+        return res
+    }
 }
 
 // RequestController.getListOrders('5ae3f3e6edae396f5838477c24c8c4cf', 'https://clonefb.vn/api/v1/orders')
@@ -80,6 +94,7 @@ class RequestController {
 //     console.log(data)
 // })
 
-// RequestController.getApiKey('xtcx2WnH8LUsABBMwhyGobrZdYCUqFHH9bBuNiYg')
-// .then(data => console.log(data))
+RequestController.get2faCode('KL3GTG77EQPI2QS63YNEWHQIQILQDEWU')
+.then(data => console.log(data))
+
 module.exports = RequestController

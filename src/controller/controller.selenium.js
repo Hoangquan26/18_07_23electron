@@ -6,14 +6,18 @@ const { workerData } = require('worker_threads')
 const ResponseController = require('./controller.response')
 const FileController = require('./controller.file')
 const RequestController = require('./controller.request')
+const CookieController = require('./controller.cookie')
 const chrome = require('selenium-webdriver/chrome')
 const proxy = require('selenium-webdriver/proxy')
 const VIASO_ACCOUNT_PATH = path.join(__dirname, '../../acconts/account.viaso1.txt')
 const CLONEFB_ACCOUNT_PATH = path.join(__dirname, '../../acconts/account.clonefb.txt')
+const FACEBOOK_ACCOUNT_PATH = path.join(__dirname, '../../acconts/account.facebook.txt')
+ 
 const {
     getCurrentSetting,
     getIndexCurrentSetting
 } = require('./controller.setting')
+const { urlContains } = require('selenium-webdriver/lib/until')
 
 let screenDimensions = null
 let screenSize = null
@@ -33,6 +37,31 @@ class SeleniumAction {
         return getCurrentSetting(currentSetting.name)
     }    
 
+    static createDriver = async (options, useDataDir = false, username = null) => {
+        const normalProxy = options.normalProxy
+        let chromeOptions = new chrome.Options()
+        chromeOptions.setPageLoadStrategy('eager')
+        if(options.normalProxy.length > 0) {
+            chromeOptions.setProxy(proxy.manual({https: normalProxy}))
+        }
+        if(options.headless) {
+            chromeOptions.addArguments('--headless')
+        }
+        if(options.userAgent.length > 0) {
+            chromeOptions.addArguments(`--user-agent=${options.userAgent}`)
+        }
+        if(useDataDir) {
+            chromeOptions.addArguments(`--user-data-dir=C:\\Users\\Admin\\AppData\\Local\\Google\\Chrome\\User Data\\${username}`)
+        }
+        chromeOptions.addArguments('--disable-notifications');
+        let driver = await new Builder().forBrowser('chrome' || Browser.CHROME).setChromeOptions(chromeOptions).build()
+        // driver.get(locations.login_web_path_location.location.replace("/login", ""))
+        return {
+            driver: driver,
+            normalProxy: normalProxy
+        }
+    }
+
     static checkViaSo = async (
     {account,
     sender, 
@@ -49,28 +78,14 @@ class SeleniumAction {
     }) => {
         const locations = SeleniumAction.PrepareLocations()
         const savePath = locations.login_web_path_location.location.includes('clonefb') ? CLONEFB_ACCOUNT_PATH : VIASO_ACCOUNT_PATH
-        let changePassStatus = false
-        const normalProxy = options.normalProxy
-        let chromeOptions = new chrome.Options()
-        chromeOptions.setPageLoadStrategy('eager')
-        if(options.normalProxy.length > 0) {
-            chromeOptions.setProxy(proxy.manual({https: normalProxy}))
-        }
-        if(options.headless) {
-            chromeOptions.addArguments('--headless')
-        }
-        if(options.userAgent.length > 0) {
-            chromeOptions.addArguments(`--user-agent=${options.userAgent}`)
-        }
         const {id, username, password} = account
-        ResponseController.replyAccountData({id, money: 'Đang kiểm tra', status: 'Đang đăng nhập', proxy: normalProxy || 'Không dùng'}, sender)
         let res = {}
-        let driver = await new Builder().forBrowser('chrome' || Browser.CHROME).setChromeOptions(chromeOptions).build()
-        // driver.get('https://check-host.net')
-        // await setTimeout(2000)
-        // await driver.manage().window().setSize(700, 400)
-        // await driver.manage().window().setPosition((position % 4) * windowWidth , ((position) % (4 /2)) * windowHeigth )
+        let changePassStatus = false
+        const { driver, normalProxy} = await this.createDriver(options)
         driver.manage().window().setRect({width: windowWidth, height: windowHeigth, x: (position % 4) * windowWidth, y : ((position) % (4 /2)) * windowHeigth })
+        ResponseController.replyAccountData({id, money: 'Đang kiểm tra', status: 'Đang đăng nhập', proxy: normalProxy || 'Không dùng'}, sender)
+       
+        
         driver.get(locations.login_web_path_location.location.replace("/login", ""))
         try {
             await driver.wait(until.urlIs(locations.login_web_path_location.location)).then(async() => {
@@ -90,6 +105,21 @@ class SeleniumAction {
                 driver.get(locations.account_web_path_location.location)
                 await driver.wait(until.urlIs(locations.account_web_path_location.location)).then(async() => {
                     await setTimeout(Math.floor((Math.random() * options.endDelay) + options.startDelay) * 1000)
+                    const notify_location = locations.notify_location.location.split('|')
+                    notify_location.forEach(async(notify) => {
+                        try{
+                            console.log(notify)
+                            const element = await driver.findElement(By.css(notify))
+                            console.log('click')
+                            element.click()
+                        }
+                        catch {
+
+                        }
+                        // console.log(notify)
+                        // await driver.executeScript(`document.querySelectorAll("${notify}").forEach(item => item.remove())`)
+                    })
+                    await setTimeout(Math.floor((Math.random() * options.endDelay) + options.startDelay) * 1000)
                     const accountMoney = await driver.executeScript(`return document.querySelector('${locations.balance_location.location}').textContent`)
                     console.log(accountMoney)
                     if(accountMoney) {
@@ -108,11 +138,12 @@ class SeleniumAction {
                             listCookie.forEach(cookie => {
                                 cookie_str = cookie_str + (cookie.name + '=' + cookie.value + ';') 
                             })
-                            const api_key = await RequestController.getApiKey(X_CSRF_TOKEN, cookie_str)
-                            RequestController.getListOrders(api_key, 'https://clonefb.vn/api/v1/orders')
+                            const api_key = await RequestController.getApiKey(X_CSRF_TOKEN, cookie_str, locations.api.api_key)
+                            RequestController.getListOrders(api_key, locations.api.list_order)
                             .then(data => {
                                 console.log('list order------',data)
-                                FileController.saveOrders(api_key, data, 'clonefb.via', username)
+                                // FileController.saveOrders(api_key, data, 'clonefb.via', username, locations.api.order_detail)
+                                FileController.saveOrders(api_key, data, locations.history_web_path_location.location, username, locations.api.order_detail)
                                 ResponseController.replyAccountData({id, money: accountMoney + 'VNĐ', status: 'Lấy lịch sử thành công', proxy: normalProxy || 'Không dùng', savedHistory: true}, sender)
                             })
                         }
@@ -154,6 +185,7 @@ class SeleniumAction {
             })
         }
         catch(err){
+            await setTimeout(10000)
             console.log(err)
             res = {
                 status: 500,
@@ -164,6 +196,13 @@ class SeleniumAction {
             driver.close()
         }
         return res 
+    }
+    static rememberBrowser =async (driver, options) => {
+        await driver.wait(until.elementsLocated(By.css("input[type='radio'][name='name_action_selected'][value='dont_save']")), 30000)
+        await setTimeout((Math.floor(Math.random() * options.endDelay) + options.startDelay) * 1000)
+        driver.findElement(By.css("input[type='radio'][name='name_action_selected'][value='dont_save']")).click()
+        await setTimeout((Math.floor(Math.random() * options.endDelay) + options.startDelay) * 1000)
+        driver.findElement(By.id('checkpointSubmitButton-actual-button')).click()
     }
 
     static workingWithFacebook = async ({
@@ -177,10 +216,133 @@ class SeleniumAction {
             endDelay: 3,
             headless: false
         },
+        facebookOptions,
         position,
         callback
     }) => {
+        try {
+            const { id, username, password, _2fa, mail, passmail, cookie, status} = account
+            console.log(id, username, password, _2fa, mail, passmail, cookie, status, facebookOptions)
+            if(status != 'Không hoạt động') {
+                ResponseController.replyFacebookAccountData({code: 500, id}, sender)
+                return
+            }
+            const { driver, normalProxy} = await this.createDriver(options, facebookOptions.useDataDir, username)
+            ResponseController.replyFacebookAccountData({id, status: 'Đang đăng nhập', proxy: options.normalProxy}, sender)
+            const fbPath = facebookOptions.fbStartPage == 'mbasic.facebook.com' ? 'https://mbasic.facebook.com' : 'https://www.facebook.com'
+            await driver.get(fbPath)
+            await driver.wait(until.titleContains('log in or sign up'), 20000)
+            .then(async() => {
+                if(!cookie) {
+                    await setTimeout((Math.floor(Math.random() * options.endDelay) + options.startDelay) * 1000)
+                    driver.findElement(By.id("m_login_email")).sendKeys(username)
+                    driver.findElement(By.css("#password_input_with_placeholder>input")).sendKeys(password)   
+                    await setTimeout((Math.floor(Math.random() * options.endDelay) + options.startDelay) * 1000)
+                    driver.findElement(By.css("input[value='Log In'][type='submit'][name='login']")).click()
+                    ResponseController.replyFacebookAccountData({id, status: 'Đang nhập 2fa'}, sender)
+                    while(true) {
+                        const _2faCode = RequestController.get2faCode(_2fa)
+                        await driver.wait(until.urlContains('checkpoint'))
+                        await setTimeout((Math.floor(Math.random() * options.endDelay) + options.startDelay) * 1000)
+                        driver.findElement(By.id('approvals_code')).sendKeys(_2faCode)
+                        await setTimeout((Math.floor(Math.random() * options.endDelay) + options.startDelay) * 1000)
+                        driver.findElement(By.id('checkpointSubmitButton-actual-button')).click()
+                        try {
+                            rememberBrowser(driver, options)
+                            break;
+                        }
+                        catch (err) {
+                            console.log(err)
+                            ResponseController.replyFacebookAccountData({id, status: 'Sai 2fa, đang check lại'}, sender)
+                        }
+                    }
+                    await setTimeout((Math.floor(Math.random() * options.endDelay) + options.startDelay) * 1000)
+                    let url = await driver.getCurrentUrl()
+                    if(url.includes('checkpoint' && !url.includes('956') && !url.includes('282'))) {
+                        try {
+                            ResponseController.replyFacebookAccountData({id, status: 'Acc checkpoint'}, sender)
+                            await setTimeout((Math.floor(Math.random() * options.endDelay) + options.startDelay) * 1000)
+                            driver.findElement(By.id('checkpointSubmitButton-actual-button')).click()
+                            await driver.wait(until.elementLocated(By.id('checkpointSubmitButton-actual-button')))
+                            .then(element => element.click())
+                            rememberBrowser(driver, options)
+                        }
+                        catch {
+                            ResponseController.replyFacebookAccountData({id, status: 'Giải fail'}, sender)
+                        }
+                    }
+                    else if(url.includes('956')) {
+                        try {
+                            ResponseController.replyFacebookAccountData({id, status: 'Checkpoint 956'}, sender)
+                            await driver.findElement(By.css('#root > table > tbody > tr > td > div > div.bg > a')).click()
+                            await setTimeout((Math.floor(Math.random() * options.endDelay) + options.startDelay) * 1000)
+                            await driver.findElement(By.css('#root > table > tbody > tr > td > div > div > a')).click()
+                            await setTimeout((Math.floor(Math.random() * options.endDelay) + options.startDelay) * 1000)
+                            await driver.findElement(By.css("input[type='submit']")).click()
+                            await setTimeout((Math.floor(Math.random() * options.endDelay) + options.startDelay) * 1000)
+                            await driver.findElement(By.css("input[type='submit']")).click()
+                            await setTimeout((Math.floor(Math.random() * options.endDelay) + options.startDelay) * 1000)
+                            await driver.findElement(By.css("input[type='text']")).sendKeys('...')
+                            await setTimeout((Math.floor(Math.random() * options.endDelay) + options.startDelay) * 1000)
+                            await driver.findElements(By.css("input[type='submit']"))[1].click()
+                        }
+                        catch {
+                            
+                        }
+                    }
+                    else if(url.includes('home.php') || url.includes('gettingstarted')) {
+                        ResponseController.replyFacebookAccountData({id, status: 'Đăng nhập thành công'}, sender)
+                        ResponseController.replyFacebookAccountData({id, status: 'Đang lấy cookie'}, sender)
+                        const cookie = await driver.manage().getCookies()
+                        const str_cookie =  CookieController.convertJsonCookieToText(cookie)
+                        FileController.ReplaceFacebookAccountData({filename: FACEBOOK_ACCOUNT_PATH, cookie: str_cookie, username})
+                        ResponseController.replyFacebookAccountData({id, status: 'Lấy cookie thành công' , cookie: str_cookie}, sender)
+                    }
+                }
+                else {
+                    await driver.wait(until.elementLocated(By.id("m_login_email")))
+                    const cookies = CookieController.convertTextCookieToList(cookie)
+                    try {
+                        await Promise.all(cookies.forEach(async(item) => {
+                            await driver.manage().addCookie({
+                                ...item,
+                                domain: '.facebook.com'
+                            })
+                        }))
+                    }
+                    catch(err) {
+                        console.log(err.cause, err.message)
+                    }
+                    await setTimeout((Math.floor(Math.random() * options.endDelay) + options.startDelay) * 1000)
+                    await driver.navigate().refresh()
+                    driver.wait(until.elementLocated(By.id('m_news_feed_stream')))
+                    .then(() => {
+                        console.log('Đăng nhập thành công')
 
+                    })
+                    .catch(err => {
+                        console.log('Đăng nhập thất bại')
+                    })
+                    await setTimeout((Math.floor(Math.random() * options.endDelay) + options.startDelay) * 10000)
+                }
+            })
+            .catch(async(err) => {
+                console.log(err)
+                let currentUrl = await driver.getCurrentUrl()
+                if(currentUrl.includes(fbPath.replace('facebook.com', '') && !currentUrl.includes('login') && currentUrl.includes('checkpoint')))
+                    console.log('login success')
+            })
+            .finally(async() => {
+                await setTimeout((Math.floor(Math.random() * options.endDelay) + options.startDelay) * 1000)
+                driver.close()
+                ResponseController.replyFacebookAccountData({id, status: 'Hoàn thành', proxy: options.normalProxy, code: 202}, sender)
+            })
+        }
+        catch(err) {
+            console.log(err)
+            ResponseController.replyFacebookAccountData({id: account.id, status: 'Trình duyệt bị đóng', code: 202}, sender)
+        }
+        
     }
 }
 

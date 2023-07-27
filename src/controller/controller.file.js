@@ -6,15 +6,12 @@ class FileController {
         let fileData = fs.readFileSync(filename, 'utf-8')
         fileData = fileData.replace('\r', '')
         let rowDatas = fileData.split('\n')
-        console.log(rowDatas)
         const row = rowDatas.find((item) => {
             const usernameTxt = item.split('|')[0]
             if(username == usernameTxt)
                 return item
         })
-        console.log(row)
         const col = row.trim().split('|')
-        console.log(col)
         col[2] = money
         col[3] = status
         if(newpass != 'not_change'){
@@ -25,9 +22,30 @@ class FileController {
         fs.writeFileSync(filename, fileData, 'utf-8')
     }
 
-    static saveOrders = async (api_key, listOrders, configs, username) => {
+    static ReplaceFacebookAccountData = ({filename, username, newpass = 'not_change', cookie = null}) => {
+        let fileData = fs.readFileSync(filename, 'utf-8')
+        fileData = fileData.replace('\r', '')
+        let rowDatas = fileData.split('\n')
+        const row = rowDatas.find((item) => {
+            const usernameTxt = item.split('|')[0]
+            if(username == usernameTxt)
+                return item
+        })
+        const col = row.trim().split('|')
+        if(cookie) {
+            col[6] = cookie
+        }
+        if(newpass != 'not_change'){
+            col[1] = newpass
+        }
+        const newRow = col[0] + '|' + col[1] + '|' + col[2] + '|' + col[3] + '|' + col[4] + '|' + col[5] + '|' + col[6] + '|' + col[7]
+        fileData = fileData.replace(row, newRow)
+        fs.writeFileSync(filename, fileData, 'utf-8')
+    }
+
+    static saveOrders = async (api_key, listOrders, configs, username, api) => {
         try {
-            let savedHistory = FileController.readOrdersHistory('clonefb.via')
+            let savedHistory = FileController.readOrdersHistory(configs)
             console.log('savedHistory1-----',savedHistory)
             let savedHistoryId = [] 
             try {
@@ -37,27 +55,29 @@ class FileController {
                 console.log(err)
             }
             const filePath = path.join(__dirname, `../../history/${configs}.json`)
-            listOrders = await Promise.all(listOrders.map(async(item) => {
-                if(savedHistoryId.length > 0) {
-                    if(!savedHistoryId.includes(item.id)) {
-                        const data = await RequestController.getOrderDetails(api_key, item.id, 'https://clonefb.vn/api/v1/order')
-                        item['detail'] = data
-                        return item
+            if(listOrders.length > 0)
+            {
+                listOrders = await Promise.all(listOrders.map(async(item) => {
+                    if(savedHistoryId.length > 0) {
+                        if(!savedHistoryId.includes(item.id)) {
+                            const data = await RequestController.getOrderDetails(api_key, item.id, api)
+                            item['detail'] = data
+                            return item
+                        }
+                        else {
+                            return savedHistory[username].find(data => data.id == item.id)
+                        }
                     }
                     else {
-                        return savedHistory[username].find(data => data.id == item.id)
+                        const data = await RequestController.getOrderDetails(api_key, item.id, api)
+                        item['detail'] = data
+                        // console.log(item)
+                        return item
                     }
-                }
-                else {
-                    const data = await RequestController.getOrderDetails(api_key, item.id, 'https://clonefb.vn/api/v1/order')
-                    item['detail'] = data
                     // console.log(item)
-                    return item
-                }
-                // console.log(item)
-            }))
-            console.log(listOrders)
-            savedHistory[username] = listOrders
+                }))
+                savedHistory[username] = listOrders
+            }
             console.log('savedHistory-------',savedHistory)
             const obj = JSON.stringify(savedHistory)
             fs.writeFileSync(filePath, obj, 'utf-8')
@@ -79,6 +99,6 @@ class FileController {
     }
 }
 
-// console.log(FileController.readOrdersHistoryByName('quannnn', 'clonefb.via'))
+// console.log(FileController.saveOrders('1aefc10d73dbddb009f281bc8cf8a14d',[], 'clonefb.via' ,'quannnn'))
 
 module.exports = FileController

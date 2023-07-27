@@ -28,15 +28,15 @@
             <div class="main_advanced_setting">
                 <div class="selected_setting_side">
                     <div class="selected_setting_item_wrapper">
-                        <div class="selected_setting_item">
+                        <div class="selected_setting_item main_selector">
                             <i class='bx bx-shopping-bag'></i>
                             <p>Shop Via</p>
                         </div>
-                        <div class="selected_setting_item">
+                        <div class="selected_setting_item fb_selector">
                             <i class='bx bxl-facebook-circle'></i>
                             <p>Facebook</p>
                         </div>
-                        <div class="selected_setting_item">
+                        <div class="selected_setting_item api_selector">
                             <i class='bx bx-code-block'></i>
                             <p>API Tích hợp</p>
                         </div>
@@ -166,14 +166,30 @@
                                     </select>
                                 </div>
                                 <div class="horizontalLine"></div>
-                            <div class="login_setting">
-                                <h3>Trang lịch sử mua hàng</h3>
-                                <div class="location_setting_wrapper margin_top">
-                                    <div class="absolute_input">
-                                        <input minlength="1" required type="text" name="history_web_path_location">
-                                        <label for="proxy_value">Địa chỉ trang</label>
+                                <div class="login_setting">
+                                    <h3>Vị trí thông báo</h3>
+                                    <div class="location_setting_wrapper margin_top">
+                                        <div class="absolute_input">
+                                            <input minlength="1" required type="text" name="notify_location">
+                                            <label for="notify_location">Vị trí thông báo</label>
+                                        </div>
+                                        <select value="css" name="notify_type">
+                                            <option value="css">css</option>
+                                            <option value="id">id</option>
+                                            <option value="name">name</option>
+                                            <option value="xpath">xpath</option>
+                                        </select>
                                     </div>
                                 </div>
+                                <div class="horizontalLine"></div>
+                                <div class="login_setting">
+                                    <h3>Trang lịch sử mua hàng</h3>
+                                    <div class="location_setting_wrapper margin_top">
+                                        <div class="absolute_input">
+                                            <input minlength="1" required type="text" name="history_web_path_location">
+                                            <label for="proxy_value">Địa chỉ trang</label>
+                                        </div>
+                                    </div>
                                 <div class="location_setting_wrapper margin_top">
                                     <div class="absolute_input">
                                         <input minlength="1" required type="text" name="history_table_location">
@@ -195,7 +211,27 @@
                             </div>
                         </div>
                     </div>
-                    <div class="mainSettingSection facebookSetting"></div>
+                </div>
+                <div class="mainSettingSection facebookSetting"></div>
+                <div class="mainSettingSection apiSetting">
+                    <div class="location_setting_wrapper margin_top">
+                        <div class="absolute_input">
+                            <input minlength="1" required type="text" name="API_get_key">
+                            <label for="API_get_key">API lấy apikey</label>
+                        </div>
+                    </div>
+                    <div class="location_setting_wrapper margin_top">
+                        <div class="absolute_input">
+                            <input minlength="1" required type="text" name="API_get_list_orders">
+                            <label for="API_get_list_orders">API danh sách đơn hàng</label>
+                        </div>
+                    </div>
+                    <div class="location_setting_wrapper margin_top">
+                        <div class="absolute_input">
+                            <input minlength="1" required type="text" name="API_get_order_detail">
+                            <label for="API_get_order_detail">API chi tiết sản phẩm</label>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

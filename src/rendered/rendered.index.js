@@ -71,8 +71,12 @@ account_table_rows.forEach(element => {
     selectedFunctionConstructor(element)
 })
 
-const getAllSelectedAccount = () => {
-    return document.querySelectorAll('.row_selected')
+const getAllShopViaSelectedAccount = () => {
+    return document.querySelectorAll('.account_table .row_selected')
+}
+
+const getAllFacebookSelectedAccount = () => {
+    return document.querySelectorAll('.facebook_account_table .row_selected')
 }
 
 
@@ -82,32 +86,13 @@ const getAllSelectedAccount = () => {
 // You can use this script to handle events or perform actions when the toggle button is clicked.
 const toggleButton = document.getElementById("toggle");
 
-toggleButton.addEventListener("change", function() {
-  if (this.checked) {
-    // Do something when the button is toggled on
-    console.log("Button is ON");
-  } else {
-    // Do something when the button is toggled off
-    console.log("Button is OFF");
-  }
-});
 
 const data_dir_toggle = document.getElementById('toggle_data_dir')
 
-data_dir_toggle.addEventListener("change" ,() => {
-    if (this.checked) {
-        // Do something when the button is toggled on
-        console.log("Button is ON");
-      } else {
-        // Do something when the button is toggled off
-        console.log("Button is OFF");
-      }
-})
 
 const delay_start_input = document.getElementsByName('delay_start')[0]
 const delay_end_input = document.getElementsByName('delay_end')[0]
 delay_start_input.addEventListener('change', (e) => {
-    console.log(delay_end_input.value)
     if(delay_start_input.value == delay_end_input.value)
         delay_start_input.value = delay_end_input.value
 })
@@ -215,8 +200,8 @@ const checkOrderHistory = async(configs) => {
 window.fileActions.replyInsertAccount(async (_event, value) => {
     const account_table = document.querySelector('.account_table')
     const listOrderHistory = await checkOrderHistory(value.fileName)
-    console.log(listOrderHistory)
     const facebook_account_table = document.querySelector('.facebook_account_table')
+    console.log(value)
         if(value.status == 200) {
             switch(value.type) {
                 case 'main_table':
@@ -296,14 +281,14 @@ window.fileActions.replyInsertAccount(async (_event, value) => {
                             passmailtd.textContent = splitAccountData[4]
                             const cookietd = document.createElement('td')
                             cookietd.textContent = splitAccountData[6]
+                            cookietd.classList.add('text_overflow')
                             const statustd = document.createElement('td')
-                            statustd.textContent = splitAccountData[7]
+                            statustd.textContent = 'Không hoạt động'
                             const proxyCol = document.createElement('td')
                             proxyCol.textContent = 'Không dùng'
                             tr.append(usernametd, passwordtd, _2fatd, mailtd, passmailtd, cookietd, statustd, proxyCol)
                             selectedFunctionConstructor(tr)
-                            tr.id = i++
-                            console.log(tr)
+                            tr.id = `fb${i++}`
                             facebook_account_table.append(tr)
                         })
                     }
@@ -358,7 +343,7 @@ const getProgramSetting = () => {
 
 stop_program.addEventListener('click', () => {
     let data = [] 
-    getAllSelectedAccount().forEach(item => {
+    getAllShopViaSelectedAccount().forEach(item => {
         const chilren = item.childNodes
         if(chilren[3].textContent != 'Không hoạt động')
             data.push({
@@ -369,39 +354,39 @@ stop_program.addEventListener('click', () => {
     window.cmdActions.shutdownChrome(data)
 })
 
-
+const getSendData = (callback) => {
+    const rowData = callback()
+    const sendData = []
+    if(document.querySelector("input[name='web_path']").value == 'ShopVia')
+        rowData.forEach((data) => {
+            child = data.childNodes
+            const id = data.id
+            const username = child[0].textContent
+            const password = child[1].textContent
+            sendData.push({id, username, password})
+        })
+    else {
+        rowData.forEach((data) => {
+            child = data.childNodes
+            const id = data.id
+            const username = child[0].textContent
+            const password = child[1].textContent
+            const _2fa = child[2].textContent
+            const mail = child[3].textContent
+            const passmail = child[4].textContent
+            const cookie = child[5].textContent
+            const status = child[6].textContent
+            sendData.push({id, username, password, _2fa, mail, passmail, cookie, status})
+        })
+    }
+    return sendData
+}
 
 run_program.addEventListener('click', () => {
     //get option
     const options = getProgramSetting()
     //get accounts
-    const rowData = getAllSelectedAccount()
-    const sendData = []
-    rowData.forEach((data) => {
-        child = data.childNodes
-        const id = data.id
-        const username = child[0].textContent
-        const password = child[1].textContent
-        sendData.push({id, username, password})
-        if(child[3].textContent === 'Không hoạt động') {
-            try {
-                child[3].textContent === 'Đang hoạt động'
-                // window.seleniumActions.startAction([{id: data.getAttribute('id').toString() ,username: child[0].textContent, password: child[1].textContent}])
-                child[3].style.color == 'green'
-                child[3].textContent === 'Thành công'
-            }
-            catch {
-                child[3].style.color == 'red'
-                child[3].textContent === 'Lỗi'
-            }
-            finally{
-                setTimeout(() => {
-                    child[3].style.color == 'black'
-                    child[3].textContent === 'Không hoạt động'
-                }, 3000)
-            }
-        }
-    })
+    const sendData = getSendData(getAllShopViaSelectedAccount)
     //start task
     const shopViaOptions = getShopViaOptions()
     window.seleniumActions.startAction(sendData, options, shopViaOptions)
@@ -416,12 +401,14 @@ const open_facebook_btn = document.querySelector('.facebook_icon')
 open_facebook_btn.addEventListener('click', () => {
     document.querySelector('.facebook_body').classList.add('onScreen')
     document.querySelector('.main_body').classList.remove('onScreen')
+    document.querySelector("input[name='web_path']").value = 'Facebook'
 })
 
 const open_home_btn = document.querySelector('.home_icon')
 open_home_btn.addEventListener('click', () => {
     document.querySelector('.facebook_body').classList.remove('onScreen')
     document.querySelector('.main_body').classList.add('onScreen')
+    document.querySelector("input[name='web_path']").value = 'ShopVia'
 })
 
 //facebook select account
@@ -444,70 +431,129 @@ facebookFileSelector.addEventListener('click', async () => {
 //         chilren[1].textContent = newPass
 // })
 
-window.fileActions.replyInsertAccount((_event, value) => {
-    const facebook_account_table = document.querySelector('.facebook_account_table tbody')
-        if(value.status == 200) {
-            try {
-                facebook_account_table.innerHTML =  `<tr class='disabled_row'>
-                                                <th>Tài khoản</th>
-                                                <th>Mật khẩu</th>
-                                                <th>2fa</th>
-                                                <th>mail</th>
-                                                <th>passmail</th>
-                                                <th>cookie</th>
-                                                <th>Trạng thái</th>
-                                                <th>Proxy</th>
-                                            </tr>`
-                res = value.res.trim().replace('\r', '').split('\n')
-                let i = 0;
-                res.forEach(account =>{
-                    const tr = document.createElement('tr')
-                    const splitAccountData = account.split('|')
-                    const usernametd = document.createElement(td)
-                    usernametd.textContent = splitAccountData[0]
-                    const passwordtd = document.createElement(td)
-                    passwordtd.textContent = splitAccountData[1]
-                    const _2fatd = document.createElement(td)
-                    _2fatd.textContent = splitAccountData[2]
-                    const mailtd = document.createElement(td)
-                    mailtd.textContent = splitAccountData[3]
-                    const passmailtd = document.createElement(td)
-                    passmailtd.textContent = splitAccountData[4]
-                    const cookietd = document.createElement(td)
-                    cookietd.textContent = splitAccountData[6]
-                    const statustd = document.createElement(td)
-                    statustd.textContent = 'Không hoạt động'
+// window.fileActions.replyInsertAccount((_event, value) => {
+//     const facebook_account_table = document.querySelector('.facebook_account_table tbody')
+//         if(value.status == 200) {
+//             try {
+//                 facebook_account_table.innerHTML =  `<tr class='disabled_row'>
+//                                                 <th>Tài khoản</th>
+//                                                 <th>Mật khẩu</th>
+//                                                 <th>2fa</th>
+//                                                 <th>mail</th>
+//                                                 <th>passmail</th>
+//                                                 <th>cookie</th>
+//                                                 <th>Trạng thái</th>
+//                                                 <th>Proxy</th>
+//                                             </tr>`
+//                 res = value.res.trim().replace('\r', '').split('\n')
+//                 let i = 0;
+//                 res.forEach(account =>{
+//                     const tr = document.createElement('tr')
+//                     const splitAccountData = account.split('|')
+//                     const usernametd = document.createElement(td)
+//                     usernametd.textContent = splitAccountData[0]
+//                     const passwordtd = document.createElement(td)
+//                     passwordtd.textContent = splitAccountData[1]
+//                     const _2fatd = document.createElement(td)
+//                     _2fatd.textContent = splitAccountData[2]
+//                     const mailtd = document.createElement(td)
+//                     mailtd.textContent = splitAccountData[3]
+//                     const passmailtd = document.createElement(td)
+//                     passmailtd.textContent = splitAccountData[4]
+//                     const cookietd = document.createElement(td)
+//                     cookietd.textContent = splitAccountData[6]
+//                     const statustd = document.createElement(td)
+//                     statustd.textContent = 'Không hoạt động'
 
-                    // splitAccountData.forEach(item => {
-                    //     const td = document.createElement('td')
-                    //     td.textContent = item
-                    //     tr.appendChild(td)
-                    // })
-                    const proxyCol = document.createElement('td')
-                    proxyCol.textContent = 'Không dùng'
-                    tr.append(usernametd, passwordtd, _2fatd, mailtd, passmailtd, cookietd, statustd, proxyCol)
-                    selectedFunctionConstructor(tr)
-                    tr.id = i++
-                    facebook_account_table.appendChild(tr)
-                })
-            }
-            //refreah table
-            catch (err){
-                handleErrorWhileResponse(facebook_account_table, err)
-            }
-        }
-        else{
-            handleErrorWhileResponse(facebook_account_table, value.data)
-        }
-    })
+//                     // splitAccountData.forEach(item => {
+//                     //     const td = document.createElement('td')
+//                     //     td.textContent = item
+//                     //     tr.appendChild(td)
+//                     // })
+//                     const proxyCol = document.createElement('td')
+//                     proxyCol.textContent = 'Không dùng'
+//                     tr.append(usernametd, passwordtd, _2fatd, mailtd, passmailtd, cookietd, statustd, proxyCol)
+//                     selectedFunctionConstructor(tr)
+//                     tr.id = `fb${i++}`
+//                     facebook_account_table.appendChild(tr)
+//                 })
+//             }
+//             //refreah table
+//             catch (err){
+//                 handleErrorWhileResponse(facebook_account_table, err)
+//             }
+//         }
+//         else{
+//             handleErrorWhileResponse(facebook_account_table, value.data)
+//         }
+//     })
 
 //facebook program action
-const facebooK_run_program = document.querySelector('.facebooK_run_program')
+const facebooK_run_program = document.querySelector('.facebook_run_program')
 const facebook_stop_program = document.querySelector('.facebook_stop_program')
 
 const getFbMoreOptions = () => {
     const fboptions = {}
-    fboptions['fbStartPage'] = document.getElementsByName('startup_facebook_options')[0],value
-    fboptions['useDataDir'] = document.getElementById('.toggle_data_dir').value
+    fboptions['fbStartPage'] = document.querySelector('.startup_facebook_options').value
+    fboptions['useDataDir'] = document.getElementById('toggle_data_dir').checked
     return fboptions
 }
+
+facebooK_run_program.addEventListener('click', () => {
+    const facebookOptions = getFbMoreOptions()
+    const options = getProgramSetting() 
+    const sendData = getSendData(getAllFacebookSelectedAccount)
+    window.seleniumActions.startAction(sendData, options, facebookOptions)
+
+    window.seleniumActions.onReplyFacebookAccountData((_event, value) => {
+        console.log(value)
+        const row = document.getElementById(value.id)
+        const child = row.childNodes
+        switch(value.code) {
+            case 500 :
+                row.classList.add('warn')
+                let id5 = setTimeout(() => {
+                    row.classList.remove('warn')
+                    clearTimeout(id5)
+                }, 3000)
+                break;
+            case 200:
+                if(value.status) {
+                    child[6].textContent = value.status
+                }
+                if(value.proxy){
+                    child[7].textContent = value.proxy
+                }
+                if(value.cookie){
+                    child[5].textContent = value.cookie
+                }
+                break;
+            case 202:
+                row.classList.add('warn')
+                setTimeout(() => {
+                    row.classList.remove('warn')
+                }, 3000)
+                if(value.status) {
+                    child[6].textContent = value.status
+                }
+                if(value.cookie){
+                    child[5].textContent = value.cookie
+                }
+                if(value.proxy){
+                    child[7].textContent = value.proxy
+                }
+                row.classList.add('warn')
+                let id2 = setTimeout(() => {
+                    child[6].textContent = 'Không hoạt động'
+                    row.classList.remove('warn')
+                    row.classList.remove('row_selected')
+                    clearTimeout(id2)
+                }, 3000)
+                break;
+            case 100:
+                window.seleniumActions.offReplyFacebookAccountData()
+                break;
+        }
+        
+    })
+})

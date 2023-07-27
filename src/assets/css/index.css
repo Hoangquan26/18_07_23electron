@@ -298,6 +298,10 @@
     background: #ccc;
 }
 
+tr.warn {
+    background-color: rgb(221, 221, 16) !important;
+}
+
 /* end table css */
 
 /* end main body */

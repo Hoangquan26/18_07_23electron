@@ -17,8 +17,10 @@ contextBridge.exposeInMainWorld('seleniumActions', {
         totalThread: number,
     }
     */
-    startAction: (data = [], options= {}, shopViaOptions) => ipcRenderer.invoke('selenium:startAction', data, options, shopViaOptions),
-    replyAccountData: (callback) => ipcRenderer.on('selenium:replyAccountData', callback)
+    startAction: (data = [], options= {}, mainOptions) => ipcRenderer.invoke('selenium:startAction', data, options, mainOptions),
+    replyAccountData: (callback) => ipcRenderer.on('selenium:replyAccountData', callback),
+    onReplyFacebookAccountData : (callback) => ipcRenderer.on('selenium:replyFacebookAccountData', callback),
+    offReplyFacebookAccountData : () => ipcRenderer.off('selenium:offReplyFacebookAccountData'),
 })
 
 contextBridge.exposeInMainWorld('cmdActions', {

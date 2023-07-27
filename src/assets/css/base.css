@@ -164,3 +164,10 @@ input[type="checkbox"]:checked + .slider:before {
 .none {
     display: none;
 }
+
+.text_overflow {
+    max-width: 120px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
