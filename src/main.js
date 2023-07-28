@@ -1,5 +1,5 @@
 //import lib
-const { app, BrowserWindow, globalShortcut, ipcMain, dialog } = require('electron')
+const { app, BrowserWindow, globalShortcut, ipcMain, dialog, Menu } = require('electron')
 const path = require('path')
 const fs = require('fs')
 const { Worker, workerData } = require('node:worker_threads')
@@ -11,6 +11,8 @@ const { rejects } = require('assert')
 const { resolve, extname } = require('path')
 const ResponseController = require('./controller/controller.response')
 const { getSavePath, saveConfig, changeSelectedSetting} = require('./controller/controller.setting')
+const dotenv = require('dotenv')
+dotenv.config()
 //create Browser
 let SELENIUM_QUEUE = 0
 let SELENIUM_ARRAY = []
@@ -91,7 +93,6 @@ const createBrowserWindow = () => {
                     })
                 }
                 catch (err){
-                    console.log(err)
                     event.sender.send('file:replyInsertAccount', {
                         status: 500,
                         res: err
@@ -118,9 +119,18 @@ const createBrowserWindow = () => {
         switch(options.path) {
             case 'ShopVia':
                 data?.forEach(async(account) => {
-                    SELENIUM_ARRAY.push((account))
-                    ResponseController.replyAccountData({id: account.id, status: 'Trong hàng chờ'}, event.sender)
+                    if(account.status == 'Không hoạt động' || account.status == 'Sai mật khẩu') {
+                        SELENIUM_ARRAY.push((account))
+                        ResponseController.replyAccountData({id: account.id, status: 'Trong hàng chờ'}, event.sender)
+                    }
+                    else {
+                        ResponseController.replyAccountData({id: account.id, code: 500}, event.sender)
+                    }
                 })
+                // data?.forEach(async(account) => {
+                //     SELENIUM_ARRAY.push((account))
+                //     ResponseController.replyAccountData({id: account.id, status: 'Trong hàng chờ'}, event.sender)
+                // })
                 if(options.autoProxy?.length > 0) {
                     new Promise((resolve, rejects) => {
                         const worker =  new Worker('./src/worker/worker.proxy.js', {
@@ -170,12 +180,12 @@ const createBrowserWindow = () => {
                 break;
             default:
                 break;
+            }
         }
-    }
     
-    const createSettingWindow = async () => {
-        //setting response funtion define
-        
+        const createSettingWindow = async () => {
+            //setting response funtion define
+            
         const advancedSettingWin = new BrowserWindow({
             height:600,
             width:900,
@@ -242,6 +252,10 @@ const createBrowserWindow = () => {
     //ipcMain_app handle
     ipcMain.handle('app:openAdvancedSetting', createSettingWindow)
     ipcMain.handle('app:openOrderHistory', createOrderHistoryWindow)
+    ipcMain.handle('file:getOrderHistory', async(event) => {
+        const dir = fs.readdirSync('./history')
+        event.sender.send('file:replyOrderHistory', dir)
+    })
     // const openDevTool = globalShortcut.register("Alt+A", () => {
     //     // const focusedWindow = BrowserWindow.getFocusedWindow()
     //     console.log('shortcut')
@@ -250,9 +264,9 @@ const createBrowserWindow = () => {
     // })
     // if(!globalShortcut.isRegistered("Alt+A") || !openDevTool)
     // console.log('not register')    
-
+    return win
 }
-
+if (require('electron-squirrel-startup')) app.quit();
 app.on("ready", () => {
     ipcMain.handle('cmd:shutdownChrome', (event, data) => {
         child_process.exec('Taskkill /F /IM Chrome.exe')
@@ -264,7 +278,24 @@ app.on("ready", () => {
     })
     //define shortcut
 
-    createBrowserWindow()
+    const win = createBrowserWindow()
+    const tableMenu = Menu.buildFromTemplate([
+        { label: 'Chọn tất cả',
+        click: () => {
+            console.log('send')
+            win.webContents.send('app:tableSelectAll')
+        }
+    },
+        { label: 'Copy account', role: 'copy' },
+        { label: 'Paste account', role: 'paste' },
+    ])
+
+    ipcMain.handle('app:openTableMenu', (event, params) => {
+        // const { x , y } = params
+        tableMenu.popup({
+            window: win
+        })
+    })
 
     app.on("activate", () => {
         if(BrowserWindow.getAllWindows().length === 0) createBrowserWindow()

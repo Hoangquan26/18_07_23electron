@@ -18,13 +18,13 @@
     min-width: 300px;
 }
 
-.facebook_icon, .home_icon {
+.facebook_icon, .home_icon, .history_icon {
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
 }
-.body_config.open .facebook_icon,.body_config.open .home_icon{
+.body_config.open .facebook_icon,.body_config.open .home_icon,.body_config.open .history_icon{
     display: none;
 }
 
@@ -131,7 +131,7 @@
 /* end body config */
 
 /* start main body */
-.main_body, .facebook_body{
+.main_body, .facebook_body, .order_history_body{
     position: relative;
     left: 50px;
     top: 0;
@@ -241,6 +241,17 @@
 .table_wrapper_header {
     height: 25px;
     padding-bottom: 10px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.account_filter_setting {
+    display: flex;
+    justify-content: space-between;
+    gap: 5px;
+    align-items: center;
 }
 
 .main_body_table_wrapper .account_table tr, .facebook_account_table tr{
@@ -286,7 +297,6 @@
 }
 
 .history_check_btn.checked_history:hover {
-    padding: 0px 5px;
     border-radius: 5px;
     background: rgb(241, 51, 51);
     transition: all ease .3s;
@@ -324,14 +334,23 @@ tr.warn {
     font-size: 16px;
 }
 
-.startup_facebook_options_wrapper, .startup_options_wrapper {
+.startup_facebook_options_wrapper, .startup_options_wrapper, .history_options_wrapper {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 5px;
 }
 
-.startup_facebook_options, .startup_options {
+/* .startup_facebook_options, .startup_options, . {
+    width: 200px;
+    height: 30px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 5px;
+} */
+
+select {
     width: 200px;
     height: 30px;
     font-size: 16px;
@@ -350,6 +369,13 @@ tr.warn {
 .facebook_wrapper_startup, .shop_via_wrapper_startup{
     display: flex;
     gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.order_filter{
+    display: flex;
+    width: 100;
     align-items: center;
     justify-content: space-between;
 }

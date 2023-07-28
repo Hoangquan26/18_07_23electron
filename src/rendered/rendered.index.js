@@ -59,10 +59,19 @@ const selectedRow = (item) => {
     item.classList.toggle('row_selected')
 }
 
+const selectedWithoutCtrl = (item) => {
+    document.querySelectorAll('.row_selected').forEach((ele) => {
+        if(ele != item)
+            ele.classList.remove('row_selected')
+    })
+    item.classList.toggle('row_selected')
+}
 const selectedFunctionConstructor = (element) => {
     if(!element.classList.contains('disabled_row')) {
-        element.addEventListener('click', () => {
-            selectedRow(element)
+        element.addEventListener('click', (e) => {
+            if(e.button == 0) {
+                e.ctrlKey ? selectedRow(element) : selectedWithoutCtrl(element)
+            }
         })
     }
 }
@@ -162,21 +171,39 @@ fileSelector.addEventListener('click', async () => {
 })
 
 window.seleniumActions.replyAccountData((_event, value) => {
-    const {id, status, money, proxy, newPass, savedHistory} = value
+    const {id, status, money, proxy, newPass, savedHistory, code} = value
     const row = document.getElementById(id)
     const chilren = row.childNodes
-    if(money)
-        chilren[2].textContent = money
-    if(status)
-        chilren[3].textContent = status
-    if(proxy)
-        chilren[4].textContent = proxy
-    if(savedHistory) {
-        chilren[5].classList.add('checked_history')
-        chilren[5].classList.remove('unchecked_history')
+    
+        if(money)
+            chilren[2].textContent = money
+        if(status)
+            chilren[3].textContent = status
+        if(proxy)
+            chilren[4].textContent = proxy
+        if(savedHistory) {
+            chilren[5].classList.add('checked_history')
+            chilren[5].classList.remove('unchecked_history')
+        }
+        if(newPass)
+            chilren[1].textContent = newPass
+    if(code == 500) {
+        row.classList.add('warn')
+        const id = setTimeout(() => {
+            row.classList.remove('warn')
+            clearTimeout(id)
+        }, 3000)
+        return
     }
-    if(newPass)
-        chilren[1].textContent = newPass
+    else if (code == 201) {
+        row.classList.add('warn')
+        const id = setTimeout(() => {
+            row.classList.remove('warn')
+            clearTimeout(id)
+            chilren[3].textContent = 'Không hoạt động'
+        }, 3000)
+        return
+    }
 })
 
 const showOrderHistory = (e ,name, fileName) => {
@@ -196,6 +223,21 @@ const checkOrderHistory = async(configs) => {
         return {}
     }
 }
+
+const toggle_account_filter = document.querySelector('#toggle_account_filter')
+toggle_account_filter.addEventListener('change', () => {
+    const account_table = document.querySelector('.account_table')
+    if(toggle_account_filter.checked){
+        account_table.querySelectorAll('.unchecked_history').forEach(item => {
+            item.parentElement.classList.add('none')
+        })
+    }
+    else{
+        account_table.querySelectorAll('.none').forEach(item => {
+            item.classList.remove('none')
+        })
+    }
+})
 
 window.fileActions.replyInsertAccount(async (_event, value) => {
     const account_table = document.querySelector('.account_table')
@@ -237,6 +279,9 @@ window.fileActions.replyInsertAccount(async (_event, value) => {
                                 historyCol.classList.add('history_check_btn', 'checked_history')
                             }
                             else {
+                                if(toggle_account_filter.checked) {
+                                    tr.classList.add('none')
+                                }
                                 historyCol.classList.add('history_check_btn', 'unchecked_history')
                             }
                             historyCol.innerHTML ="<a>Kiểm tra lịch sử</a>"
@@ -388,7 +433,8 @@ const getSendData = (callback) => {
             const id = data.id
             const username = child[0].textContent
             const password = child[1].textContent
-            sendData.push({id, username, password})
+            const status = child[3].textContent
+            sendData.push({id, username, password, status})
         })
     else {
         rowData.forEach((data) => {
@@ -424,18 +470,37 @@ run_program.addEventListener('click', () => {
 
 const open_facebook_btn = document.querySelector('.facebook_icon')
 open_facebook_btn.addEventListener('click', () => {
+    document.querySelector('.onScreen').classList.remove('onScreen')
     document.querySelector('.facebook_body').classList.add('onScreen')
-    document.querySelector('.main_body').classList.remove('onScreen')
     document.querySelector("input[name='web_path']").value = 'Facebook'
 })
 
 const open_home_btn = document.querySelector('.home_icon')
 open_home_btn.addEventListener('click', () => {
-    document.querySelector('.facebook_body').classList.remove('onScreen')
+    document.querySelector('.onScreen').classList.remove('onScreen')
     document.querySelector('.main_body').classList.add('onScreen')
     document.querySelector("input[name='web_path']").value = 'ShopVia'
 })
 
+const open_history_btn = document.querySelector('.history_icon')
+const shop_history_options = document.querySelector('.shop_history_options')
+open_history_btn.addEventListener('click', () => {
+    document.querySelector('.onScreen').classList.remove('onScreen')
+    document.querySelector('.order_history_body').classList.add('onScreen')
+    document.querySelector("input[name='web_path']").value = 'OrderHistory'
+
+
+    window.fileActions.getOrderHistory()
+    window.fileActions.replyOrderHistory((_event, value) => {
+        shop_history_options.innerHTML = ''
+        value.forEach(item => {
+            const option = document.createElement('option')
+            option.value = item
+            option.textContent = item
+            shop_history_options.append(option)
+        })
+    })
+})
 //facebook select account
 
 const facebookFileSelector = document.getElementsByName('facebook_account_selection')[0]
@@ -580,5 +645,31 @@ facebooK_run_program.addEventListener('click', () => {
                 break;
         }
         
+    })
+})
+
+
+
+shop_history_options.addEventListener('change', (e) => {
+    console.log(e.target.value)
+    fetch(`../history/${e.target.value}`)
+    .then(data => data.json())
+    .then(data => {
+        console.log(data)
+    })
+})
+
+document.body.querySelectorAll('table').forEach(table => {
+    table.addEventListener('mousedown', (e) => {
+        if(e.button == 2) {
+            window.appActions.openTableMenu({x: e.x, y: e.y})
+        }
+    })
+    window.appActions.tableSelectAll((_event, value) => {
+        table.querySelectorAll('tr').forEach(row => {
+            if(!row.classList.contains('row_selected')){
+                row.classList.add('row_selected')
+            }
+        })
     })
 })

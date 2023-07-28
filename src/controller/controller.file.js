@@ -43,13 +43,65 @@ class FileController {
         fs.writeFileSync(filename, fileData, 'utf-8')
     }
 
+
+    static saveOrdersVer2 = async (api_key, listOrders, configs, username, api)  => {
+        try {
+            let savedHistory = FileController.readOrderHistoryVer2(configs, username)
+            console.log('savedHistory1-----',savedHistory)
+            let savedHistoryId = [] 
+            try {
+                savedHistoryId = savedHistory['orders']?.map(item => item?.id)
+            }
+            catch (err){
+                console.log(err)
+            }
+            const folderPath = path.join(__dirname, `../../history/${configs}`)
+            const filePath = path.join(__dirname, `../../history/${configs}/${username}.json`)
+            if(listOrders.length > 0)
+            {
+                listOrders = await Promise.all(listOrders.map(async(item) => {
+                    if(savedHistory?.length > 0) {
+                        if(!savedHistoryId?.includes(item.id)) {
+                            const data = await RequestController.getOrderDetails(api_key, item.id, api)
+                            item['detail'] = data
+                            return item
+                        }
+                        else {
+                            return savedHistory['orders'].find(data => data.id == item.id)
+                        }
+                    }
+                    else {
+                        const data = await RequestController.getOrderDetails(api_key, item.id, api)
+                        item['detail'] = data
+                        // console.log(item)
+                        return item
+                    }
+                    // console.log(item)
+                }))
+                savedHistory['orders'] = listOrders
+            }
+            console.log('savedHistory-------',savedHistory)
+            const obj = JSON.stringify(savedHistory)
+            try {
+                fs.writeFileSync(filePath, obj, 'utf-8')
+            }
+            catch {
+                fs.mkdirSync(folderPath)
+                fs.writeFileSync(filePath, obj, 'utf-8')
+            }
+        }
+        catch(err) {
+            console.log(err)
+        }
+    }
+
     static saveOrders = async (api_key, listOrders, configs, username, api) => {
         try {
             let savedHistory = FileController.readOrdersHistory(configs)
             console.log('savedHistory1-----',savedHistory)
             let savedHistoryId = [] 
             try {
-                savedHistory[username]?.map(item => item?.id)
+                savedHistoryId = savedHistory[username]?.map(item => item?.id)
             }
             catch (err){
                 console.log(err)
@@ -58,8 +110,8 @@ class FileController {
             if(listOrders.length > 0)
             {
                 listOrders = await Promise.all(listOrders.map(async(item) => {
-                    if(savedHistoryId.length > 0) {
-                        if(!savedHistoryId.includes(item.id)) {
+                    if(savedHistoryId?.length > 0) {
+                        if(!savedHistoryId?.includes(item.id)) {
                             const data = await RequestController.getOrderDetails(api_key, item.id, api)
                             item['detail'] = data
                             return item
@@ -80,7 +132,13 @@ class FileController {
             }
             console.log('savedHistory-------',savedHistory)
             const obj = JSON.stringify(savedHistory)
-            fs.writeFileSync(filePath, obj, 'utf-8')
+            try {
+                fs.writeFileSync(filePath, obj, 'utf-8')
+            }
+            catch {
+                fs.mkdirSync(filePath.replace(`\\${username}.json`, ''))
+                fs.writeFileSync(filePath, obj, 'utf-8')
+            }
         }
         catch(err) {
             console.log(err)
@@ -91,6 +149,18 @@ class FileController {
         try {
             const filePath = path.join(__dirname, `../../history/${configs}.json`)
             const data = fs.readFileSync(filePath, 'utf-8')
+            return JSON.parse(data)
+        }
+        catch {
+            return {}
+        }
+    }
+
+    static readOrderHistoryVer2 = (config, username) => {
+        try {
+            const filePath = path.join(__dirname, `../../history/${config}/${username}.json`)
+            const data = fs.readFileSync(filePath, 'utf-8')
+            console.log('======data',data)
             return JSON.parse(data)
         }
         catch {

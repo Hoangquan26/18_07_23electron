@@ -76,124 +76,141 @@ class SeleniumAction {
     position,
     shopViaOptions
     }) => {
-        const locations = SeleniumAction.PrepareLocations()
-        const savePath = locations.login_web_path_location.location.includes('clonefb') ? CLONEFB_ACCOUNT_PATH : VIASO_ACCOUNT_PATH
         const {id, username, password} = account
-        let res = {}
-        let changePassStatus = false
-        const { driver, normalProxy} = await this.createDriver(options)
-        driver.manage().window().setRect({width: windowWidth, height: windowHeigth, x: (position % 4) * windowWidth, y : ((position) % (4 / 2)) * windowHeigth })
-        ResponseController.replyAccountData({id, money: 'Đang kiểm tra', status: 'Đang đăng nhập', proxy: normalProxy || 'Không dùng'}, sender)
-       
-        
-        driver.get(locations.login_web_path_location.location.replace("/login", ""))
         try {
-            await driver.wait(until.urlIs(locations.login_web_path_location.location)).then(async() => {
-                driver.findElement(By[locations.username_input_location.type](locations.username_input_location.location)).sendKeys(username)
-                await setTimeout(Math.floor((Math.random() * options.endDelay) + options.startDelay) * 1000)
-                driver.findElement(By[locations.password_input_location.type](locations.password_input_location.location)).sendKeys(password)
-                await setTimeout(Math.floor((Math.random() * options.endDelay) + options.startDelay) * 1000)
-                driver.findElement(By[locations.login_button_location.type](locations.login_button_location.location)).click()
-                await setTimeout(Math.floor((Math.random() * options.endDelay) + options.startDelay) * 1000)
-                ResponseController.replyAccountData({id, money: 'Đang kiểm tra', status: 'Đã đăng nhập', proxy: normalProxy || 'Không dùng'}, sender)
-                await setTimeout(Math.floor((Math.random() * options.endDelay) + options.startDelay) * 1000)
-                if((await driver.getCurrentUrl()).toString() == locations.login_web_path_location.location) {
-                    ResponseController.replyAccountData({id, money: 'Chưa kiểm tra', status: 'Sai mật khẩu', proxy: normalProxy || 'Không dùng'}, sender)
-                    FileController.ReplaceAccountData({filename: savePath , username, money: 'Chưa kiểm tra', status: 'Sai mật khẩu'})
-                    throw Error('Sai mật khẩu'.toString('utf-8'))
-                }
-                driver.get(locations.account_web_path_location.location)
-                await driver.wait(until.urlIs(locations.account_web_path_location.location)).then(async() => {
+            const locations = SeleniumAction.PrepareLocations()
+            const savePath = locations.login_web_path_location.location.includes('clonefb') ? CLONEFB_ACCOUNT_PATH : VIASO_ACCOUNT_PATH
+            let res = {}
+            let changePassStatus = false
+            const { driver, normalProxy} = await this.createDriver(options)
+            driver.manage().window().setRect({width: windowWidth, height: windowHeigth, x: (position % 4) * windowWidth, y : ((position) % (4 / 2)) * windowHeigth })
+            ResponseController.replyAccountData({id, money: 'Đang kiểm tra', status: 'Đang đăng nhập', proxy: normalProxy || 'Không dùng'}, sender)
+            driver.get(locations.login_web_path_location.location.replace("/login", ""))
+            try {
+                await driver.wait(until.urlIs(locations.login_web_path_location.location)).then(async() => {
+                    driver.findElement(By[locations.username_input_location.type](locations.username_input_location.location)).sendKeys(username)
                     await setTimeout(Math.floor((Math.random() * options.endDelay) + options.startDelay) * 1000)
-                    const notify_location = locations.notify_location.location.split('|')
-                    notify_location.forEach(async(notify) => {
-                        try{
-                            console.log(notify)
-                            const element = await driver.findElement(By.css(notify))
-                            element.click()
+                    driver.findElement(By[locations.password_input_location.type](locations.password_input_location.location)).sendKeys(password)
+                    await setTimeout(Math.floor((Math.random() * options.endDelay) + options.startDelay) * 1000)
+                    driver.findElement(By[locations.login_button_location.type](locations.login_button_location.location)).click()
+                    await setTimeout(Math.floor((Math.random() * options.endDelay) + options.startDelay) * 1000)
+                    if((await driver.getCurrentUrl()).toString() == locations.login_web_path_location.location) {
+                        console.log('here')
+                        try {
+                            const alert = await driver.findElement(By.css('alert'))
+                            ResponseController.replyAccountData({id, status: 'Giới hạn IP', code: 500}, sender)
+                            return
                         }
-                        catch (e){
+                        catch(e) {
                             console.log(e)
+                            ResponseController.replyAccountData({id, status: 'Sai mật khẩu', code: 500}, sender)
+                            FileController.ReplaceAccountData({filename: savePath , username, money: 'Chưa kiểm tra', status: 'Sai mật khẩu'})
+                            return
                         }
-                        // console.log(notify)
-                        // await driver.executeScript(`document.querySelectorAll("${notify}").forEach(item => item.remove())`)
-                    })
+                    }
+                    console.log('here')
+                    ResponseController.replyAccountData({id, money: 'Đang kiểm tra', status: 'Đã đăng nhập', proxy: normalProxy || 'Không dùng'}, sender)
                     await setTimeout(Math.floor((Math.random() * options.endDelay) + options.startDelay) * 1000)
-                    const accountMoney = await driver.executeScript(`return document.querySelector('${locations.balance_location.location}').textContent`)
-                    console.log(accountMoney)
-                    if(accountMoney) {
-                        res = {
-                            code: 200,
-                            data : accountMoney
-                        }
-                        if(shopViaOptions.saveShopingHistory) {
-                            ResponseController.replyAccountData({id, money: accountMoney + 'VNĐ', status: 'Đang lấy lịch sử', proxy: normalProxy || 'Không dùng'}, sender)
-                            const pageSource = (await driver.getPageSource()).toString()
-                            const regex = /'X-CSRF-TOKEN': '([^']+)/
-                            const X_CSRF_TOKEN = regex.exec(pageSource)[1]
-                            let cookie_str = ''
-                            let listCookie = await driver.manage().getCookies()
-                            listCookie = listCookie.reverse()
-                            listCookie.forEach(cookie => {
-                                cookie_str = cookie_str + (cookie.name + '=' + cookie.value + ';') 
-                            })
-                            const api_key = await RequestController.getApiKey(X_CSRF_TOKEN, cookie_str, locations.api.api_key)
-                            RequestController.getListOrders(api_key, locations.api.list_order)
-                            .then(data => {
-                                // FileController.saveOrders(api_key, data, 'clonefb.via', username, locations.api.order_detail)
-                                FileController.saveOrders(api_key, data, locations.history_web_path_location.location, username, locations.api.order_detail)
-                                ResponseController.replyAccountData({id, money: accountMoney + 'VNĐ', status: 'Lấy lịch sử thành công', proxy: normalProxy || 'Không dùng', savedHistory: true}, sender)
-                            })
-                        }
-                        if(options.changePassword) {
-                            try {
-                                ResponseController.replyAccountData({id, money: accountMoney + 'VNĐ', status: 'Đang đổi mật khẩu', proxy: normalProxy || 'Không dùng'}, sender)
-                                driver.findElement(By[locations.repass_input_location.type](locations.repass_input_location.location)).sendKeys(password)
-                                driver.findElement(By[locations.newpass_input_location.type](locations.newpass_input_location.location)).sendKeys(options.newPass)
-                                await setTimeout(Math.floor((Math.random() * options.endDelay) + options.startDelay) * 1000)
-                                driver.findElement(By[locations.confirm_password_input_location.type](locations.confirm_password_input_location.location)).sendKeys(options.newPass)
-                                await setTimeout(Math.floor((Math.random() * options.endDelay) + options.startDelay) * 1000) 
-                                driver.findElement(By[locations.submit_password_input_location.type](locations.submit_password_input_location.location)).click()
-                                await setTimeout(Math.floor((Math.random() * options.endDelay) + options.startDelay) * 1000) 
-                                ResponseController.replyAccountData({id, money: accountMoney + 'VNĐ', status: 'Đổi mật khẩu thành công', proxy: normalProxy || 'Không dùng'}, sender)
-                                changePassStatus = true
+                    driver.get(locations.account_web_path_location.location)
+                    await driver.wait(until.urlIs(locations.account_web_path_location.location)).then(async() => {
+                        await setTimeout(Math.floor((Math.random() * options.endDelay) + options.startDelay) * 1000)
+                        const notify_location = locations.notify_location.location.split('|')
+                        notify_location.forEach(async(notify) => {
+                            try{
+                                console.log(notify)
+                                if(notify){
+                                    const element = await driver.findElement(By.css(notify))
+                                    element.click()
+                                }
                             }
-                            catch {
-                                ResponseController.replyAccountData({id, money: accountMoney + 'VNĐ', status: 'Đổi mật khẩu thất bại', proxy: normalProxy || 'Không dùng'}, sender)
-                                changePassStatus = false
+                            catch (e){
+                                console.log(e)
                             }
-                        }
-                        await setTimeout(Math.floor((Math.random() * options.endDelay) + options.startDelay) * 1000) 
-                        if(changePassStatus) {
-                            ResponseController.replyAccountData({id, money: accountMoney + 'VNĐ', status: 'Kiểm tra thành công', proxy: normalProxy || 'Không dùng', newPass: options.newPass}, sender)
-                            FileController.ReplaceAccountData({filename: savePath , username, money: accountMoney + ' VNĐ', newpass: options.newPass})
+                            // console.log(notify)
+                            // await driver.executeScript(`document.querySelectorAll("${notify}").forEach(item => item.remove())`)
+                        })
+                        await setTimeout(Math.floor((Math.random() * options.endDelay) + options.startDelay) * 1000)
+                        const accountMoney = await driver.executeScript(`return document.querySelector('${locations.balance_location.location}').textContent`)
+                        console.log(accountMoney)
+                        if(accountMoney) {
+                            res = {
+                                code: 200,
+                                data : accountMoney
+                            }
+                            if(shopViaOptions.saveShopingHistory) {
+                                ResponseController.replyAccountData({id, money: accountMoney + 'VNĐ', status: 'Đang lấy lịch sử', proxy: normalProxy || 'Không dùng'}, sender)
+                                const pageSource = (await driver.getPageSource()).toString()
+                                const regex = /'X-CSRF-TOKEN': '([^']+)/
+                                const X_CSRF_TOKEN = regex.exec(pageSource)[1]
+                                let cookie_str = ''
+                                let listCookie = await driver.manage().getCookies()
+                                listCookie = listCookie.reverse()
+                                listCookie.forEach(cookie => {
+                                    cookie_str = cookie_str + (cookie.name + '=' + cookie.value + ';') 
+                                })
+                                const api_key = await RequestController.getApiKey(X_CSRF_TOKEN, cookie_str, locations.api.api_key)
+                                RequestController.getListOrders(api_key, locations.api.list_order)
+                                .then(data => {
+                                    // FileController.saveOrders(api_key, data, 'clonefb.via', username, locations.api.order_detail)
+                                    FileController.saveOrdersVer2(api_key, data, locations.history_web_path_location.location, username, locations.api.order_detail)
+                                    ResponseController.replyAccountData({id, money: accountMoney + 'VNĐ', status: 'Lấy lịch sử thành công', proxy: normalProxy || 'Không dùng', savedHistory: true}, sender)
+                                })
+                            }
+                            if(options.changePassword) {
+                                try {
+                                    ResponseController.replyAccountData({id, money: accountMoney + 'VNĐ', status: 'Đang đổi mật khẩu', proxy: normalProxy || 'Không dùng'}, sender)
+                                    driver.findElement(By[locations.repass_input_location.type](locations.repass_input_location.location)).sendKeys(password)
+                                    driver.findElement(By[locations.newpass_input_location.type](locations.newpass_input_location.location)).sendKeys(options.newPass)
+                                    await setTimeout(Math.floor((Math.random() * options.endDelay) + options.startDelay) * 1000)
+                                    driver.findElement(By[locations.confirm_password_input_location.type](locations.confirm_password_input_location.location)).sendKeys(options.newPass)
+                                    await setTimeout(Math.floor((Math.random() * options.endDelay) + options.startDelay) * 1000) 
+                                    driver.findElement(By[locations.submit_password_input_location.type](locations.submit_password_input_location.location)).click()
+                                    await setTimeout(Math.floor((Math.random() * options.endDelay) + options.startDelay) * 1000) 
+                                    ResponseController.replyAccountData({id, money: accountMoney + 'VNĐ', status: 'Đổi mật khẩu thành công', proxy: normalProxy || 'Không dùng'}, sender)
+                                    changePassStatus = true
+                                }
+                                catch {
+                                    ResponseController.replyAccountData({id, money: accountMoney + 'VNĐ', status: 'Đổi mật khẩu thất bại', proxy: normalProxy || 'Không dùng'}, sender)
+                                    changePassStatus = false
+                                }
+                            }
+                            await setTimeout(Math.floor((Math.random() * options.endDelay) + options.startDelay) * 1000) 
+                            if(changePassStatus) {
+                                ResponseController.replyAccountData({id, money: accountMoney + 'VNĐ', status: 'Kiểm tra thành công', proxy: normalProxy || 'Không dùng', newPass: options.newPass}, sender)
+                                FileController.ReplaceAccountData({filename: savePath , username, money: accountMoney + ' VNĐ', newpass: options.newPass})
+                            }
+                            else {
+                                ResponseController.replyAccountData({id, money: accountMoney + 'VNĐ', status: 'Kiểm tra thành công', proxy: normalProxy || 'Không dùng'}, sender)
+                                FileController.ReplaceAccountData({filename: savePath , username, money: accountMoney + ' VNĐ'})
+                            }
                         }
                         else {
-                            ResponseController.replyAccountData({id, money: accountMoney + 'VNĐ', status: 'Kiểm tra thành công', proxy: normalProxy || 'Không dùng'}, sender)
-                            FileController.ReplaceAccountData({filename: savePath , username, money: accountMoney + ' VNĐ'})
+                            res = {
+                                status: 500,
+                                data : ''
+                            }
                         }
-                    }
-                    else {
-                        res = {
-                            status: 500,
-                            data : ''
-                        }
-                    }
+                    })
                 })
-            })
-        }
-        catch(err){
-            await setTimeout(10000)
-            console.log(err)
-            res = {
-                status: 500,
-                data : err
             }
+            catch(err){
+                await setTimeout(10000)
+                console.log(err)
+                res = {
+                    status: 500,
+                    data : err
+                }
+            }
+            finally{
+                ResponseController.replyAccountData({id, status: 'Kiểm tra thành công', proxy: normalProxy || 'Hoàn thành', code: 201}, sender)
+                driver.close()
+            }
+            return res 
         }
-        finally{
-            driver.close()
+        catch (er){
+            console.log(er)
+            ResponseController.replyAccountData({id, status: 'Trình duyệt bị đóng', code: 201}, sender)
         }
-        return res 
     }
     static rememberBrowser =async (driver, options) => {
         await driver.wait(until.elementsLocated(By.css("input[type='radio'][name='name_action_selected'][value='dont_save']")), 30000)

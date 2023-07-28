@@ -2,8 +2,10 @@ const {ipcRenderer, contextBridge} = require('electron')
 
 contextBridge.exposeInMainWorld('fileActions', {
     insertAccount: (type) => ipcRenderer.invoke('file:insertAccount', type),
-    replyInsertAccount: (callback) => ipcRenderer.on('file:replyInsertAccount', callback)
-})
+    replyInsertAccount: (callback) => ipcRenderer.on('file:replyInsertAccount', callback),
+    getOrderHistory: () => ipcRenderer.invoke('file:getOrderHistory'),
+    replyOrderHistory: (callback) => ipcRenderer.on('file:replyOrderHistory', callback)
+ })
 
 contextBridge.exposeInMainWorld('seleniumActions', {
     /*
@@ -29,7 +31,9 @@ contextBridge.exposeInMainWorld('cmdActions', {
 
 contextBridge.exposeInMainWorld('appActions', {
     openAdvancedSetting: () => ipcRenderer.invoke('app:openAdvancedSetting'),
-    openOrderHistory: (username, fileName) => ipcRenderer.invoke('app:openOrderHistory', username, fileName)
+    openOrderHistory: (username, fileName) => ipcRenderer.invoke('app:openOrderHistory', username, fileName),
+    openTableMenu: (params) => ipcRenderer.invoke('app:openTableMenu', params),
+    tableSelectAll: (callback) => ipcRenderer.on('app:tableSelectAll', callback),
 })
 
 contextBridge.exposeInMainWorld('settingAction', {

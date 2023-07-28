@@ -29,6 +29,13 @@
             <i class='bx bx-home'></i>
           </span>
         </div>
+        <div class="history_icon margin_top">
+          <span class="body_config--action open margin_top">
+            <i class='bx bx-history'></i>
+          </span>
+        </div>
+
+
         <div class="body_config_main">
           <div class="user_input absolute_input">
             <input value="ShopVia" minlength="1" required name="web_path" type="text"/>
@@ -157,6 +164,14 @@
           <div class="main_body_table_wrapper">
             <div class="table_wrapper_header">
               <h3>Danh sách tài khoản</h3> 
+
+              <div class="account_filter_setting padding_right">
+                <p>Tài khoản đã lấy mật khẩu</p>
+                <label class="account-filter-toggle-button toggle-button">
+                  <input type="checkbox" id="toggle_account_filter">
+                  <span class="slider"></span>
+                </label>
+              </div>
             </div>
             <div class="account_table_wrapper">
               <table class="account_table">
@@ -261,6 +276,23 @@
             </div>
           </div>
           <!-- end account table -->
+        </div>
+      </div>
+
+      <div class="order_history_body">
+        <div class="order_filter">
+          <div>
+            <header>
+              <h3>Lịch sử mua hàng</h3>
+            </header>
+            <div class="hisotry_more_options">
+              <div class="history_options_wrapper">
+                <p>Chọn shop</p>
+                <select class="shop_history_options" name="shop_history_options">
+                </select>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       <!-- end main body config -->
