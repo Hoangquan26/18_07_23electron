@@ -212,16 +212,32 @@ const showOrderHistory = (e ,name, fileName) => {
 }
 
 const checkOrderHistory = async(configs) => {
-    try {
-        return await fetch(`../history/${configs}.via.json`)
-        .then(data =>{
-            const res = data.json()
-            return res
+    window.fileActions.getOrderFolderData(configs + '.via')
+
+    return await new Promise((resolve, reject) => {
+        window.fileActions.replyOrderFolderData((_event, value) => {
+            if(value) {
+                const values = Object.values(value)
+                const key = values.map(item => {
+                    return Object.keys(item)[0]
+                })
+                resolve(key)     
+            }
+            else {
+                resolve([])
+            }
         })
-    }
-    catch {
-        return {}
-    }
+    })
+    // try {
+    //     return await fetch(`../history/${configs}.via.json`)
+    //     .then(data =>{
+    //         const res = data.json()
+    //         return res
+    //     })
+    // }
+    // catch {
+    //     return {}
+    // }
 }
 
 const toggle_account_filter = document.querySelector('#toggle_account_filter')
@@ -242,6 +258,7 @@ toggle_account_filter.addEventListener('change', () => {
 window.fileActions.replyInsertAccount(async (_event, value) => {
     const account_table = document.querySelector('.account_table')
     const listOrderHistory = await checkOrderHistory(value.fileName)
+    console.log(listOrderHistory)
     const facebook_account_table = document.querySelector('.facebook_account_table')
     console.log(value)
         if(value.status == 200) {
@@ -275,7 +292,7 @@ window.fileActions.replyInsertAccount(async (_event, value) => {
                                 showOrderHistory(e, tr.childNodes[0].textContent, value.fileName)
                             })
                             // console.log(listOrderHistory[splitAccountData[0]], splitAccountData[0])
-                            if(listOrderHistory[splitAccountData[0]] != null) {
+                            if(listOrderHistory?.includes(splitAccountData[0])) {
                                 historyCol.classList.add('history_check_btn', 'checked_history')
                             }
                             else {
@@ -468,6 +485,8 @@ run_program.addEventListener('click', () => {
 
 //open facebook tab
 
+
+
 const open_facebook_btn = document.querySelector('.facebook_icon')
 open_facebook_btn.addEventListener('click', () => {
     document.querySelector('.onScreen').classList.remove('onScreen')
@@ -482,6 +501,12 @@ open_home_btn.addEventListener('click', () => {
     document.querySelector("input[name='web_path']").value = 'ShopVia'
 })
 
+
+const getOrderFolderData = (folderName) => {
+    console.log(folderName)
+    window.fileActions.getOrderFolderData(folderName)
+}
+
 const open_history_btn = document.querySelector('.history_icon')
 const shop_history_options = document.querySelector('.shop_history_options')
 open_history_btn.addEventListener('click', () => {
@@ -489,7 +514,7 @@ open_history_btn.addEventListener('click', () => {
     document.querySelector('.order_history_body').classList.add('onScreen')
     document.querySelector("input[name='web_path']").value = 'OrderHistory'
 
-
+    const filename = document.querySelector('.startup_options').value
     window.fileActions.getOrderHistory()
     window.fileActions.replyOrderHistory((_event, value) => {
         shop_history_options.innerHTML = ''
@@ -499,8 +524,11 @@ open_history_btn.addEventListener('click', () => {
             option.textContent = item
             shop_history_options.append(option)
         })
+        shop_history_options.value = value[0]
+        getOrderFolderData(value[0])
     })
 })
+
 //facebook select account
 
 const facebookFileSelector = document.getElementsByName('facebook_account_selection')[0]
@@ -508,75 +536,6 @@ const facebookFileSelector = document.getElementsByName('facebook_account_select
 facebookFileSelector.addEventListener('click', async () => {
     const data = await window.fileActions.insertAccount('facebook_table')
 })
-
-// window.seleniumActions.replyAccountData((_event, value) => {
-//     const {id, status, money, proxy, newPass} = value
-//     const row = document.getElementById(id)
-//     const chilren = row.childNodes
-//     console.log(value, chilren)
-//     chilren[2].textContent = money
-//     chilren[3].textContent = status
-//     chilren[4].textContent = proxy
-//     if(newPass)
-//         chilren[1].textContent = newPass
-// })
-
-// window.fileActions.replyInsertAccount((_event, value) => {
-//     const facebook_account_table = document.querySelector('.facebook_account_table tbody')
-//         if(value.status == 200) {
-//             try {
-//                 facebook_account_table.innerHTML =  `<tr class='disabled_row'>
-//                                                 <th>Tài khoản</th>
-//                                                 <th>Mật khẩu</th>
-//                                                 <th>2fa</th>
-//                                                 <th>mail</th>
-//                                                 <th>passmail</th>
-//                                                 <th>cookie</th>
-//                                                 <th>Trạng thái</th>
-//                                                 <th>Proxy</th>
-//                                             </tr>`
-//                 res = value.res.trim().replace('\r', '').split('\n')
-//                 let i = 0;
-//                 res.forEach(account =>{
-//                     const tr = document.createElement('tr')
-//                     const splitAccountData = account.split('|')
-//                     const usernametd = document.createElement(td)
-//                     usernametd.textContent = splitAccountData[0]
-//                     const passwordtd = document.createElement(td)
-//                     passwordtd.textContent = splitAccountData[1]
-//                     const _2fatd = document.createElement(td)
-//                     _2fatd.textContent = splitAccountData[2]
-//                     const mailtd = document.createElement(td)
-//                     mailtd.textContent = splitAccountData[3]
-//                     const passmailtd = document.createElement(td)
-//                     passmailtd.textContent = splitAccountData[4]
-//                     const cookietd = document.createElement(td)
-//                     cookietd.textContent = splitAccountData[6]
-//                     const statustd = document.createElement(td)
-//                     statustd.textContent = 'Không hoạt động'
-
-//                     // splitAccountData.forEach(item => {
-//                     //     const td = document.createElement('td')
-//                     //     td.textContent = item
-//                     //     tr.appendChild(td)
-//                     // })
-//                     const proxyCol = document.createElement('td')
-//                     proxyCol.textContent = 'Không dùng'
-//                     tr.append(usernametd, passwordtd, _2fatd, mailtd, passmailtd, cookietd, statustd, proxyCol)
-//                     selectedFunctionConstructor(tr)
-//                     tr.id = `fb${i++}`
-//                     facebook_account_table.appendChild(tr)
-//                 })
-//             }
-//             //refreah table
-//             catch (err){
-//                 handleErrorWhileResponse(facebook_account_table, err)
-//             }
-//         }
-//         else{
-//             handleErrorWhileResponse(facebook_account_table, value.data)
-//         }
-//     })
 
 //facebook program action
 const facebooK_run_program = document.querySelector('.facebook_run_program')
@@ -651,12 +610,41 @@ facebooK_run_program.addEventListener('click', () => {
 
 
 shop_history_options.addEventListener('change', (e) => {
-    console.log(e.target.value)
-    fetch(`../history/${e.target.value}`)
-    .then(data => data.json())
-    .then(data => {
-        console.log(data)
+    getOrderFolderData(e.target.value)
+})
+
+window.fileActions.replyOrderFolderData((_event, value) => {
+    const table = document.querySelector('.history_main tbody')
+    table.innerHTML =  ''
+    const data = value
+    data.forEach(item => {
+        const fileData = Object.values(item)
+        fileData.forEach(file => {
+            file.forEach(order => {
+                const detail = order.detail
+                detail.data.forEach(product => {
+                    const row = document.createElement('tr')
+                    row.innerHTML =`<td>${detail.id}</td>
+                                    <td>${product.uid}</td>
+                                    <td>${detail.type}</td>
+                                    <td>${new Date(detail.created_at).toLocaleString()}</td>
+                                    <td>${detail.price}</td>`
+
+                    const full_info = document.createElement('td')
+                    full_info.innerHTML = `<td>${product.full_info}</td>`
+                    full_info.setAttribute('data-copy-text', product.full_info)
+                    full_info.addEventListener('click', (e) => {
+
+                        navigator.clipboard.writeText(e.target.getAttribute('data-copy-text'))
+                    })
+                    row.append(full_info)
+                    table.append(row)
+                    
+                })
+            })
+        })
     })
+
 })
 
 document.body.querySelectorAll('table').forEach(table => {

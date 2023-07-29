@@ -253,17 +253,27 @@ const createBrowserWindow = () => {
     ipcMain.handle('app:openAdvancedSetting', createSettingWindow)
     ipcMain.handle('app:openOrderHistory', createOrderHistoryWindow)
     ipcMain.handle('file:getOrderHistory', async(event) => {
-        const dir = fs.readdirSync('./history')
+        const dir = fs.readdirSync(`./history`)
         event.sender.send('file:replyOrderHistory', dir)
     })
-    // const openDevTool = globalShortcut.register("Alt+A", () => {
-    //     // const focusedWindow = BrowserWindow.getFocusedWindow()
-    //     console.log('shortcut')
-        
-    //     // console.log
-    // })
-    // if(!globalShortcut.isRegistered("Alt+A") || !openDevTool)
-    // console.log('not register')    
+    ipcMain.handle('file:getOrderFolderData', (event, folderName) => {
+        const allFiles = fs.readdirSync(`./history/${folderName}`)
+        const data = []
+        allFiles.forEach(file => {
+            let fileData = fs.readFileSync(`./history/${folderName}/${file}`)
+            try {
+                fileData = JSON.parse(fileData)
+                if(Object.values(fileData).length > 0)
+                data.push(fileData)
+            }
+            catch {
+                
+            }
+        })
+
+        event.sender.send('file:replyOrderFolderData', data)
+    }) 
+
     return win
 }
 if (require('electron-squirrel-startup')) app.quit();

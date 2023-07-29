@@ -3,8 +3,10 @@ const {ipcRenderer, contextBridge} = require('electron')
 contextBridge.exposeInMainWorld('fileActions', {
     insertAccount: (type) => ipcRenderer.invoke('file:insertAccount', type),
     replyInsertAccount: (callback) => ipcRenderer.on('file:replyInsertAccount', callback),
-    getOrderHistory: () => ipcRenderer.invoke('file:getOrderHistory'),
-    replyOrderHistory: (callback) => ipcRenderer.on('file:replyOrderHistory', callback)
+    getOrderHistory: (filename) => ipcRenderer.invoke('file:getOrderHistory', filename),
+    replyOrderHistory: (callback) => ipcRenderer.on('file:replyOrderHistory', callback),
+    getOrderFolderData: (folderName) => ipcRenderer.invoke('file:getOrderFolderData', folderName),
+    replyOrderFolderData: (callback) => ipcRenderer.on('file:replyOrderFolderData', callback),
  })
 
 contextBridge.exposeInMainWorld('seleniumActions', {
@@ -31,7 +33,7 @@ contextBridge.exposeInMainWorld('cmdActions', {
 
 contextBridge.exposeInMainWorld('appActions', {
     openAdvancedSetting: () => ipcRenderer.invoke('app:openAdvancedSetting'),
-    openOrderHistory: (username, fileName) => ipcRenderer.invoke('app:openOrderHistory', username, fileName),
+    openOrderHistory: (username, fileName, config) => ipcRenderer.invoke('app:openOrderHistory', username, fileName),
     openTableMenu: (params) => ipcRenderer.invoke('app:openTableMenu', params),
     tableSelectAll: (callback) => ipcRenderer.on('app:tableSelectAll', callback),
 })

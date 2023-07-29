@@ -222,9 +222,13 @@
 
 /* table css */
 
-.main_body_table_wrapper {
+.main_body_table_wrapper{
     width: 100%;
     margin-top: 10px;
+}
+
+.history_main table, .history_main {
+    width: 100%;
 }
 
 .account_table_wrapper {
@@ -238,7 +242,8 @@
     border: 1px solid #ccc;
 }
 
-.table_wrapper_header {
+
+.table_wrapper_header{
     height: 25px;
     padding-bottom: 10px;
     width: 100%;
@@ -379,3 +384,63 @@ select {
     align-items: center;
     justify-content: space-between;
 }
+
+
+.history_main {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+
+  /* Đặt màu nền cho tiêu đề bảng */
+  .history_main thead {
+    background-color: #f2f2f2;
+  }
+
+  .history_main tr, .history_main th, .history_main td {
+    max-height: 25px;
+  }
+  /* Đặt màu chữ và căn giữa nội dung trong tiêu đề bảng */
+  .history_main th {
+    padding: 10px;
+    text-align: center;
+    color: #333;
+  }
+
+  /* Đặt màu chữ cho cột cuối cùng */
+  .history_main th:last-child {
+    color: #ff0000; /* Màu đỏ cho cột cuối cùng */
+  }
+
+  /* Đặt màu chữ và căn giữa nội dung trong các ô dữ liệu */
+  .history_main td {
+    padding: 10px;
+    text-align: center;
+    color: #666;
+    border: 1px solid #ddd; /* Viền cho các ô */
+  }
+
+  /* Đặt màu chữ cho cột cuối cùng */
+  .history_main td:last-child {
+    color: #ff0000; /* Màu đỏ cho cột cuối cùng */
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: 500px;
+    overflow: hidden;
+    cursor: pointer;
+  }
+
+  /* Đặt màu nền xen kẽ cho các hàng */
+  .history_main tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+
+  /* Đặt màu chữ cho hàng đầu tiên (nếu muốn khác với các hàng khác) */
+  .history_main tr:first-child {
+    color: #00f; /* Màu xanh cho hàng đầu tiên */
+  }
+
+  /* Đặt kiểu chữ in đậm cho hàng cuối cùng (nếu muốn) */
+  .history_main tr:last-child {
+    font-weight: bold;
+  }

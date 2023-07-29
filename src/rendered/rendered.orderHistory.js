@@ -1,4 +1,5 @@
-const setupData = async(username, fileName) => {
+
+const setupDataV1 = async(username, fileName) => {
     return await fetch(`../../../history/${fileName}.via.json`)
     .then(data => {
         try {
@@ -11,6 +12,23 @@ const setupData = async(username, fileName) => {
     })
     .then(data => {
         return data[username]
+    })
+}
+
+
+const setupData = async(username, fileName) => {
+    return await fetch(`../../../history/${fileName}.via/${username}.json`)
+    .then(data => {
+        try {
+            const res = data.json()
+            return res
+        }
+        catch {
+            return {}
+        }
+    })
+    .then(data => {
+        return Object.values(data)
     })
 }
 
@@ -29,7 +47,7 @@ const copyToClipboard = (item) => {
 
 
 const openDetail = (id) => {
-    const order = listOrders.find(item => item.id === id).detail
+    const order = listOrders[0].find(item => item.id === id).detail
     console.log(order)
     const header = document.querySelector('.rows')
     header.innerHTML = `<div class="col-md-6 col-sm-12">
@@ -72,6 +90,7 @@ const openDetail = (id) => {
         copyToClipboard(item)}
         )
     })
+
     order.data.forEach(item => {
         const tr = document.createElement('tr')
         tr.innerHTML = `<tr>
@@ -118,7 +137,7 @@ window.windows.setupData(async(_event, value) => {
                             <th>Trạng thái</th>
                             <th><i class="far fa-question-circle"></i></th>
                         </tr>`
-    listOrders.forEach(order => {
+    listOrders[0].forEach(order => {
         const tr = document.createElement('tr')
         tr.innerHTML = `<td><a class="" href="https://clonefb.vn/don-hang/${order.id}">#${order.id}</a></td>
                         <td>

@@ -50,7 +50,7 @@ class FileController {
             console.log('savedHistory1-----',savedHistory)
             let savedHistoryId = [] 
             try {
-                savedHistoryId = savedHistory['orders']?.map(item => item?.id)
+                savedHistoryId = savedHistory[username]?.map(item => item?.id)
             }
             catch (err){
                 console.log(err)
@@ -67,7 +67,7 @@ class FileController {
                             return item
                         }
                         else {
-                            return savedHistory['orders'].find(data => data.id == item.id)
+                            return savedHistory[username].find(data => data.id == item.id)
                         }
                     }
                     else {
@@ -78,7 +78,7 @@ class FileController {
                     }
                     // console.log(item)
                 }))
-                savedHistory['orders'] = listOrders
+                savedHistory[username] = listOrders
             }
             console.log('savedHistory-------',savedHistory)
             const obj = JSON.stringify(savedHistory)
