@@ -1,5 +1,5 @@
 class ResponseController {
-    static replyAccountData = async ({code = 200,id, money = 'Chưa kiểm tra', status, proxy = 'Không dùng', newPass = null, savedHistory = false}, sender) => {
+    static replyAccountData = async ({code = 200,id, money, status, proxy, newPass = null, savedHistory = false}, sender) => {
         sender.send('selenium:replyAccountData', {
             id, money, status, proxy, newPass, savedHistory, code
         })

@@ -444,3 +444,12 @@ select {
   .history_main tr:last-child {
     font-weight: bold;
   }
+
+  .history_main tr:hover {
+    background-color: rgb(230, 230, 230);
+    cursor: pointer;
+  }
+
+  .history_main tr.row_selected {
+    background-color: rgb(230, 230, 230);
+  }

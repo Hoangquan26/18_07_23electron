@@ -1,14 +1,16 @@
 {
-  "name": "18_07_23_electron",
+  "name": "tool",
   "version": "1.0.0",
-  "description": "",
+  "description": "halo",
   "main": "src/main.js",
   "scripts": {
     "dev": "electron .",
     "start": "electron-forge start",
     "test": "echo \"Error: no test specified\" && exit 1",
     "package": "electron-forge package",
-    "make": "electron-forge make"
+    "make": "electron-forge make",
+    "makewin": "electron-forge make --platform=win32",
+    "pack": "electron-builder --win --x64 --config electron-builder.json"
   },
   "author": "HoangQuan",
   "descriptions": "tool By me",
@@ -21,13 +23,22 @@
     "@electron-forge/maker-zip": "^6.2.1",
     "@electron-forge/plugin-auto-unpack-natives": "^6.2.1",
     "electron": "^25.3.0",
+    "electron-builder": "^22.0.1",
     "selenium-webdriver": "^4.10.0",
     "tailwindcss": "^3.3.3"
   },
   "dependencies": {
     "dotenv": "^16.3.1",
     "electron-squirrel-startup": "^1.0.0",
+    "electron-updater": "^6.1.1",
     "imap": "^0.8.19",
-    "node-imap": "^0.9.6"
+    "node-imap": "^0.9.6",
+    "selenium-webdriver": "^4.0.0"
+  },
+  "build": {
+    "appId": "tool",
+    "win": {
+      "icon": "./assets/images/app_icon.png"
+    }
   }
 }

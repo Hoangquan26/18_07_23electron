@@ -21,7 +21,7 @@ contextBridge.exposeInMainWorld('seleniumActions', {
         totalThread: number,
     }
     */
-    startAction: (data = [], options= {}, mainOptions) => ipcRenderer.invoke('selenium:startAction', data, options, mainOptions),
+    startAction: (data = [], options= {}, mainOptions, fileName) => ipcRenderer.invoke('selenium:startAction', data, options, mainOptions, fileName),
     replyAccountData: (callback) => ipcRenderer.on('selenium:replyAccountData', callback),
     onReplyFacebookAccountData : (callback) => ipcRenderer.on('selenium:replyFacebookAccountData', callback),
     offReplyFacebookAccountData : () => ipcRenderer.off('selenium:offReplyFacebookAccountData'),
@@ -36,6 +36,9 @@ contextBridge.exposeInMainWorld('appActions', {
     openOrderHistory: (username, fileName, config) => ipcRenderer.invoke('app:openOrderHistory', username, fileName),
     openTableMenu: (params) => ipcRenderer.invoke('app:openTableMenu', params),
     tableSelectAll: (callback) => ipcRenderer.on('app:tableSelectAll', callback),
+    openOrderTableMenu: (params) => ipcRenderer.invoke('app:openOrderTableMenu', params),
+    orderTableSelectAll: (callback) => ipcRenderer.on('app:orderTableSelectAll', callback),
+    orderTableCopyAll: (callback) => ipcRenderer.on('app:orderTableCopyAll', callback)
 })
 
 contextBridge.exposeInMainWorld('settingAction', {

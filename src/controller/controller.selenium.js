@@ -74,12 +74,13 @@ class SeleniumAction {
         headless: false
     },
     position,
-    shopViaOptions
+    shopViaOptions,
+    fileName
     }) => {
         const {id, username, password} = account
         try {
             const locations = SeleniumAction.PrepareLocations()
-            const savePath = locations.login_web_path_location.location.includes('clonefb') ? CLONEFB_ACCOUNT_PATH : VIASO_ACCOUNT_PATH
+            const savePath =  path.join(__dirname,  '../../acconts/account.' + fileName + '.txt')
             let res = {}
             let changePassStatus = false
             const { driver, normalProxy} = await this.createDriver(options)
@@ -97,7 +98,7 @@ class SeleniumAction {
                     if((await driver.getCurrentUrl()).toString() == locations.login_web_path_location.location) {
                         console.log('here')
                         try {
-                            const alert = await driver.findElement(By.css('alert'))
+                            const alert = await driver.findElement(By.css('.alert'))
                             ResponseController.replyAccountData({id, status: 'Giới hạn IP', code: 500}, sender)
                             return
                         }
@@ -152,7 +153,7 @@ class SeleniumAction {
                                 RequestController.getListOrders(api_key, locations.api.list_order)
                                 .then(data => {
                                     // FileController.saveOrders(api_key, data, 'clonefb.via', username, locations.api.order_detail)
-                                    FileController.saveOrdersVer2(api_key, data, locations.history_web_path_location.location, username, locations.api.order_detail)
+                                    FileController.saveOrdersVer3(api_key, data, locations.history_web_path_location.location, username, locations.api.order_detail)
                                     ResponseController.replyAccountData({id, money: accountMoney + 'VNĐ', status: 'Lấy lịch sử thành công', proxy: normalProxy || 'Không dùng', savedHistory: true}, sender)
                                 })
                             }

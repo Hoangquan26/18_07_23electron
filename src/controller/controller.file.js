@@ -43,6 +43,59 @@ class FileController {
         fs.writeFileSync(filename, fileData, 'utf-8')
     }
 
+    static saveOrdersVer3 = async (api_key, listOrders, configs, username, api)  => {
+        try {
+            let savedHistory = FileController.readOrderHistoryVer3(configs, username)
+            const folderPath = path.join(__dirname, `../../history/${configs}`)
+            const filePath = path.join(__dirname, `../../history/${configs}/${username}.txt`)
+            if(listOrders?.length > 0)
+            {
+                listOrders = listOrders.map((item) => {
+                    if(savedHistory?.length > 0) {
+                        if(!savedHistory?.includes(item.id)) {
+                            // const data = await RequestController.getOrderDetails(api_key, item.id, api)
+                            // item['detail'] = data
+                            return item.id
+                        }
+                        else {
+                            return savedHistory.find(data => data.id == item.id)
+                        }
+                    }
+                    else {
+                        // const data = await RequestController.getOrderDetails(api_key, item.id, api)
+                        // item['detail'] = data
+                        // console.log(item)
+                        return item.id
+                    }
+                    // console.log(item)
+                })
+                savedHistory = listOrders
+            }
+            const obj = savedHistory?.join('\n')
+            console.log('savedHistory-------',obj)
+            try {
+                fs.writeFileSync(filePath, obj, 'utf-8')
+            }
+            catch {
+                fs.mkdirSync(folderPath)
+                fs.writeFileSync(filePath, obj, 'utf-8')
+            }
+        }
+        catch(err) {
+            console.log(err)
+        }
+    }
+
+    static readOrderHistoryVer3 =  (config, username) => {
+        try {
+            const filePath = path.join(__dirname, `../../history/${config}/${username}.txt`)
+            const data = fs.readFileSync(filePath, 'utf-8')
+            return data.split('\n')
+        }
+        catch {
+            return []
+        }
+    }
 
     static saveOrdersVer2 = async (api_key, listOrders, configs, username, api)  => {
         try {

@@ -206,39 +206,39 @@ window.seleniumActions.replyAccountData((_event, value) => {
     }
 })
 
-const showOrderHistory = (e ,name, fileName) => {
-    e.stopPropagation()
-    window.appActions.openOrderHistory(name, fileName)
-}
+// const showOrderHistory = (e ,name, fileName) => {
+//     e.stopPropagation()
+//     window.appActions.openOrderHistory(name, fileName)
+// }
 
-const checkOrderHistory = async(configs) => {
-    window.fileActions.getOrderFolderData(configs + '.via')
+// const checkOrderHistory = async(configs) => {
+//     window.fileActions.getOrderFolderData(configs + '.via')
 
-    return await new Promise((resolve, reject) => {
-        window.fileActions.replyOrderFolderData((_event, value) => {
-            if(value) {
-                const values = Object.values(value)
-                const key = values.map(item => {
-                    return Object.keys(item)[0]
-                })
-                resolve(key)     
-            }
-            else {
-                resolve([])
-            }
-        })
-    })
-    // try {
-    //     return await fetch(`../history/${configs}.via.json`)
-    //     .then(data =>{
-    //         const res = data.json()
-    //         return res
-    //     })
-    // }
-    // catch {
-    //     return {}
-    // }
-}
+//     return await new Promise((resolve, reject) => {
+//         window.fileActions.replyOrderFolderData((_event, value) => {
+//             if(value) {
+//                 const values = Object.values(value)
+//                 const key = values.map(item => {
+//                     return Object.keys(item)[0]
+//                 })
+//                 resolve(key)     
+//             }
+//             else {
+//                 resolve([])
+//             }
+//         })
+//     })
+//     // try {
+//     //     return await fetch(`../history/${configs}.via.json`)
+//     //     .then(data =>{
+//     //         const res = data.json()
+//     //         return res
+//     //     })
+//     // }
+//     // catch {
+//     //     return {}
+//     // }
+// }
 
 const toggle_account_filter = document.querySelector('#toggle_account_filter')
 toggle_account_filter.addEventListener('change', () => {
@@ -254,13 +254,14 @@ toggle_account_filter.addEventListener('change', () => {
         })
     }
 })
-
+let fileName = ''
 window.fileActions.replyInsertAccount(async (_event, value) => {
-    const account_table = document.querySelector('.account_table')
-    const listOrderHistory = await checkOrderHistory(value.fileName)
-    console.log(listOrderHistory)
-    const facebook_account_table = document.querySelector('.facebook_account_table')
     console.log(value)
+    fileName = value.fileName
+    const account_table = document.querySelector('.account_table')
+    // const listOrderHistory = await checkOrderHistory(value.fileName)
+    // console.log(listOrderHistory)
+    const facebook_account_table = document.querySelector('.facebook_account_table')
         if(value.status == 200) {
             switch(value.type) {
                 case 'main_table':
@@ -271,7 +272,6 @@ window.fileActions.replyInsertAccount(async (_event, value) => {
                                                         <th>Số dư</th>
                                                         <th>Trạng thái</th>
                                                         <th>Proxy</th>
-                                                        <th></th>
                                                     </tr>`
                         res = value.res.trim().replace('\r', '').split('\n')
                         let i = 0;
@@ -285,25 +285,25 @@ window.fileActions.replyInsertAccount(async (_event, value) => {
                             })
                             const proxyCol = document.createElement('td')
                             proxyCol.textContent = 'Không dùng'
-                            const historyCol = document.createElement('td')
-                            historyCol.addEventListener('click', (e) => {
-                                if(historyCol.classList.contains('unchecked_history'))
-                                    return
-                                showOrderHistory(e, tr.childNodes[0].textContent, value.fileName)
-                            })
+                            // const historyCol = document.createElement('td')
+                            // historyCol.addEventListener('click', (e) => {
+                            //     if(historyCol.classList.contains('unchecked_history'))
+                            //         return
+                            //     showOrderHistory(e, tr.childNodes[0].textContent, value.fileName)
+                            // })
                             // console.log(listOrderHistory[splitAccountData[0]], splitAccountData[0])
-                            if(listOrderHistory?.includes(splitAccountData[0])) {
-                                historyCol.classList.add('history_check_btn', 'checked_history')
-                            }
-                            else {
-                                if(toggle_account_filter.checked) {
-                                    tr.classList.add('none')
-                                }
-                                historyCol.classList.add('history_check_btn', 'unchecked_history')
-                            }
-                            historyCol.innerHTML ="<a>Kiểm tra lịch sử</a>"
+                            // if(listOrderHistory?.includes(splitAccountData[0])) {
+                            //     historyCol.classList.add('history_check_btn', 'checked_history')
+                            // }
+                            // else {
+                            //     if(toggle_account_filter.checked) {
+                            //         tr.classList.add('none')
+                            //     }
+                            //     historyCol.classList.add('history_check_btn', 'unchecked_history')
+                            // }
+                            // historyCol.innerHTML ="<a>Kiểm tra lịch sử</a>"
                             tr.append(proxyCol)
-                            tr.append(historyCol)
+                            // tr.append(historyCol)
                             selectedFunctionConstructor(tr)
                             tr.id = i++
                             account_table.appendChild(tr)
@@ -477,7 +477,7 @@ run_program.addEventListener('click', () => {
     const sendData = getSendData(getAllShopViaSelectedAccount)
     //start task
     const shopViaOptions = getShopViaOptions()
-    window.seleniumActions.startAction(sendData, options, shopViaOptions)
+    window.seleniumActions.startAction(sendData, options, shopViaOptions, fileName)
     // window.seleniumActions.startAction([{username: 'quannnn', password: '642003'}])
 })
 
@@ -615,39 +615,25 @@ shop_history_options.addEventListener('change', (e) => {
 
 window.fileActions.replyOrderFolderData((_event, value) => {
     const table = document.querySelector('.history_main tbody')
-    table.innerHTML =  ''
-    const data = value
-    data.forEach(item => {
-        const fileData = Object.values(item)
-        fileData.forEach(file => {
-            file.forEach(order => {
-                const detail = order.detail
-                detail.data.forEach(product => {
-                    const row = document.createElement('tr')
-                    row.innerHTML =`<td>${detail.id}</td>
-                                    <td>${product.uid}</td>
-                                    <td>${detail.type}</td>
-                                    <td>${new Date(detail.created_at).toLocaleString()}</td>
-                                    <td>${detail.price}</td>`
-
-                    const full_info = document.createElement('td')
-                    full_info.innerHTML = `<td>${product.full_info}</td>`
-                    full_info.setAttribute('data-copy-text', product.full_info)
-                    full_info.addEventListener('click', (e) => {
-
-                        navigator.clipboard.writeText(e.target.getAttribute('data-copy-text'))
-                    })
-                    row.append(full_info)
-                    table.append(row)
-                    
-                })
-            })
-        })
+    table.querySelectorAll('tr').forEach(item => {
+        item.removeEventListener('click', selectedFunctionConstructor(item))
     })
 
+    table.innerHTML =  ''
+    const data = value
+    let stt = 1
+    data.forEach(item => {
+        const row = document.createElement('tr')
+        row.innerHTML =`<td>${stt++}</td>
+                        <td>${item}</td>`
+        row.addEventListener('click', () => selectedFunctionConstructor(row))
+        // const full_info = document.createElement('td')
+        // full_info.innerHTML = `<td>${product.full_info}</td>`
+        table.append(row)
+    })
 })
 
-document.body.querySelectorAll('table').forEach(table => {
+document.body.querySelectorAll('.selectable_table').forEach(table => {
     table.addEventListener('mousedown', (e) => {
         if(e.button == 2) {
             window.appActions.openTableMenu({x: e.x, y: e.y})
@@ -661,3 +647,24 @@ document.body.querySelectorAll('table').forEach(table => {
         })
     })
 })
+const handleOrderTableMouseDown =  (e) => {
+    if(e.button == 2) {
+        window.appActions.openOrderTableMenu({x: e.x, y: e.y})
+    }
+    document.querySelector('.history_main').removeEventListener('click', handleOrderTableMouseDown)
+}
+window.appActions.orderTableSelectAll(() => {
+    document.querySelectorAll('.history_main tr').forEach(row => {
+        if(!row.classList.contains('row_selected'))
+            row.classList.add('row_selected')
+    })
+})
+
+window.appActions.orderTableCopyAll(() => {
+    let text = ''
+    document.querySelectorAll('.history_main .row_selected').forEach(row => {
+        text += row.children[1].textContent + '\n'
+    })
+    navigator.clipboard.writeText(text.replace('Mã đơn\n', ''))
+})
+document.querySelector('.history_main').addEventListener('mousedown', handleOrderTableMouseDown)

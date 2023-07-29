@@ -1,0 +1,9 @@
+{
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "zip"
+    }
+  }
+  

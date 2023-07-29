@@ -21,10 +21,10 @@ const usedProxies = []
 let runTime = 0;
 let savedProxy = null
 
-const workerPromiseShopVia = (array, event, options, position, shopViaOptions) => {
+const workerPromiseShopVia = (array, event, options, position, shopViaOptions, fileName) => {
     runTime++
     return new Promise((resolve, reject) => {
-        const params = {account: array.shift(), sender: event.sender, options, position, shopViaOptions}
+        const params = {account: array.shift(), sender: event.sender, options, position, shopViaOptions, fileName}
         const res = SeleniumAction.checkViaSo(params)
         resolve(res)
     })
@@ -41,7 +41,7 @@ const workerPromiseFacebook = (array, event, options, position, facebookOptions)
 
 const refreshAutoProxy = (proxies) => proxies[Math.floor(Math.random() * proxies.length)]
 
-const backtrackWorking = ({total_thread, event, options, mainOptions, callback}) => {
+const backtrackWorking = ({total_thread, event, options, mainOptions, callback, fileName}) => {
     if(SELENIUM_ARRAY.length == 0 || complete)
         return
     if(SELENIUM_QUEUE > total_thread)
@@ -63,13 +63,13 @@ const backtrackWorking = ({total_thread, event, options, mainOptions, callback})
             } 
         }
         options.normalProxy = options.autoProxy ? savedProxy : options.normalProxy 
-        callback(SELENIUM_ARRAY, event, options, SELENIUM_QUEUE, mainOptions)
+        callback(SELENIUM_ARRAY, event, options, SELENIUM_QUEUE, mainOptions, fileName)
         .then(data => {
             SELENIUM_QUEUE--
-            return backtrackWorking({total_thread, event, options, mainOptions, callback})
+            return backtrackWorking({total_thread, event, options, mainOptions, callback, fileName})
         })
         if(SELENIUM_QUEUE < total_thread)
-            return backtrackWorking({total_thread, event, options, mainOptions, callback})
+            return backtrackWorking({total_thread, event, options, mainOptions, callback, fileName})
         else 
             return
     }
@@ -113,7 +113,8 @@ const createBrowserWindow = () => {
         headless: false,
         userAgent: ''
     },
-    mainOptions
+    mainOptions,
+    fileName
     ) => {
         complete = 0
         switch(options.path) {
@@ -139,13 +140,13 @@ const createBrowserWindow = () => {
                         worker.on('message', (value) => {
                             const proxies = value
                                 options.autoProxy = proxies
-                                backtrackWorking({total_thread: options.totalThread, event, options,mainOptions, callback: workerPromiseShopVia})
+                                backtrackWorking({total_thread: options.totalThread, event, options,mainOptions, callback: workerPromiseShopVia, fileName})
                                 worker.terminate()
                         })
                     })
                 }
                 else {
-                    backtrackWorking({total_thread: options.totalThread, event, options,mainOptions, callback: workerPromiseShopVia})
+                    backtrackWorking({total_thread: options.totalThread, event, options,mainOptions, callback: workerPromiseShopVia, fileName})
                 }
                 break;
             case 'Facebook' :
@@ -219,7 +220,8 @@ const createBrowserWindow = () => {
             show: false,
             icon: path.join(__dirname, './assets/images/app_icon.png'),
             webPreferences: {
-                preload: path.join(__dirname, './preload/preload.orderHistory.js')
+                preload: path.join(__dirname, './preload/preload.orderHistory.js'),
+                nodeIntegrationInWorker: true
             }
         })
         HistoryWindow.loadFile('src/childWindow/orderHistory/index.html')
@@ -260,17 +262,15 @@ const createBrowserWindow = () => {
         const allFiles = fs.readdirSync(`./history/${folderName}`)
         const data = []
         allFiles.forEach(file => {
-            let fileData = fs.readFileSync(`./history/${folderName}/${file}`)
-            try {
-                fileData = JSON.parse(fileData)
-                if(Object.values(fileData).length > 0)
-                data.push(fileData)
-            }
-            catch {
-                
+            let fileData = fs.readFileSync(`./history/${folderName}/${file}`).toString('utf-8').replace('\r', '').trim()
+            if(fileData.length> 0) {
+                fileData = fileData.split('\n')
+                while(fileData.length > 0) {
+                    data.push(fileData[0])
+                    fileData.shift()
+                }
             }
         })
-
         event.sender.send('file:replyOrderFolderData', data)
     }) 
 
@@ -292,13 +292,31 @@ app.on("ready", () => {
     const tableMenu = Menu.buildFromTemplate([
         { label: 'Chọn tất cả',
         click: () => {
-            console.log('send')
             win.webContents.send('app:tableSelectAll')
         }
     },
-        { label: 'Copy account', role: 'copy' },
+        { label: 'Copy account', role: 'Sao chép' },
         { label: 'Paste account', role: 'paste' },
     ])
+
+    const orderTableMenu = Menu.buildFromTemplate([
+        { label: 'Chọn tất cả',
+            click: () => {
+                win.webContents.send('app:orderTableSelectAll')
+            }
+        },
+        {
+            label: 'Sao chép',
+            click: () => {
+                win.webContents.send('app:orderTableCopyAll')
+            }
+        }
+    ])
+    ipcMain.handle('app:openOrderTableMenu', (event, {x, y}) => {
+        orderTableMenu.popup({
+            window: win
+        })
+    })
 
     ipcMain.handle('app:openTableMenu', (event, params) => {
         // const { x , y } = params
